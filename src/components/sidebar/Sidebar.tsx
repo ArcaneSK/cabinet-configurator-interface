@@ -1,6 +1,10 @@
 import { useState } from 'react'
 import { WallSetup } from './WallSetup'
 import { CabinetCatalog } from './CabinetCatalog'
+import { CabinetProperties } from './CabinetProperties'
+import { CountertopPanel } from './CountertopPanel'
+import { SettingsPanel } from './SettingsPanel'
+import { useStore } from '../../store/useStore'
 
 interface SectionProps {
   title: string
@@ -11,7 +15,6 @@ interface SectionProps {
 
 function Section({ title, defaultOpen = true, children, badge }: SectionProps) {
   const [open, setOpen] = useState(defaultOpen)
-
   return (
     <div className="sidebar-section">
       <div className="sidebar-section-header" onClick={() => setOpen(!open)}>
@@ -24,16 +27,28 @@ function Section({ title, defaultOpen = true, children, badge }: SectionProps) {
 }
 
 export function Sidebar() {
+  const selectedId = useStore((s) => s.selectedId)
+  const wall = useStore((s) => s.wall)
+
   return (
     <div className="sidebar">
-      <Section title="Wall Setup" badge="">
+      <Section title="Wall Setup" badge={`${Math.round(wall.width / 12)}' \u00D7 ${Math.round(wall.height / 12)}'`}>
         <WallSetup />
       </Section>
       <Section title="Add Cabinet">
         <CabinetCatalog />
       </Section>
+      {selectedId && (
+        <Section title="Selected Cabinet">
+          <CabinetProperties />
+        </Section>
+      )}
+      <Section title="Countertops">
+        <CountertopPanel />
+      </Section>
+      <Section title="Settings" defaultOpen={false}>
+        <SettingsPanel />
+      </Section>
     </div>
   )
 }
-
-export { Section }

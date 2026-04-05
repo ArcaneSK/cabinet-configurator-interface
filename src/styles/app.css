@@ -205,3 +205,59 @@ input[type="checkbox"] {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Color swatches */
+.swatch-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.swatch:hover {
+  border-color: var(--text-secondary);
+}
+
+.swatch.active {
+  border-color: var(--accent);
+}
+
+.prop-row {
+  margin-bottom: 10px;
+}
+
+.prop-row .size-label {
+  margin-bottom: 6px;
+}
+
+.delete-btn {
+  width: 100%;
+  padding: 8px;
+  background: transparent;
+  border: 1px solid #c00;
+  border-radius: var(--radius);
+  color: #c00;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.delete-btn:hover {
+  background: rgba(204, 0, 0, 0.1);
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
