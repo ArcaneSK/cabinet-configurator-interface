@@ -1,11 +1,14 @@
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Environment } from '@react-three/drei'
 import { WallEnvironment } from './WallEnvironment'
+import { CabinetGroup } from './CabinetGroup'
+import { useStore } from '../../store/useStore'
 import { useRef } from 'react'
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib'
 
 export function SceneCanvas() {
   const controlsRef = useRef<OrbitControlsType>(null)
+  const cabinets = useStore((s) => s.cabinets)
 
   return (
     <Canvas
@@ -31,6 +34,19 @@ export function SceneCanvas() {
         maxDistance={400}
       />
       <WallEnvironment />
+
+      {Object.values(cabinets).map((cab) => (
+        <CabinetGroup key={cab.id} data={cab} />
+      ))}
+
+      {/* Click on empty space to deselect */}
+      <mesh
+        position={[96, 54, -1]}
+        visible={false}
+        onClick={() => useStore.getState().setSelected(null)}
+      >
+        <planeGeometry args={[500, 500]} />
+      </mesh>
     </Canvas>
   )
 }
