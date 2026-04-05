@@ -1,5 +1,6 @@
-import { SceneCanvas } from './viewport/SceneCanvas'
 import { Sidebar } from './sidebar/Sidebar'
+import { Toolbar } from './toolbar/Toolbar'
+import { SceneCanvas } from './viewport/SceneCanvas'
 
 export function Layout() {
   return (
@@ -14,17 +15,7 @@ export function Layout() {
         <Sidebar />
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <div style={{
-          height: 'var(--toolbar-height)',
-          minHeight: 40,
-          background: 'var(--bg-secondary)',
-          borderBottom: '1px solid var(--border)',
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0 12px',
-        }}>
-          Toolbar
-        </div>
+        <Toolbar />
         <div style={{ flex: 1 }}>
           <SceneCanvas />
         </div>
