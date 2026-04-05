@@ -1,8 +1,5 @@
-import './styles/App.scss';
-import CabinetConfigurator from './components/CabinetConfigurator';
+import { Layout } from './components/Layout'
 
-function App() {
-  return <CabinetConfigurator />;
+export default function App() {
+  return <Layout />
 }
-
-export default App;
