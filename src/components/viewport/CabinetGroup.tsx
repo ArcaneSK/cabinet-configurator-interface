@@ -7,6 +7,7 @@ import { getFinish } from '../../catalog/finishes'
 import { CabinetBox } from './CabinetBox'
 import { Doors } from './Doors'
 import { Drawers } from './Drawers'
+import { DragHandler } from './DragHandler'
 
 const T = 0.75
 const DRAWER_HEIGHT = 6
@@ -118,6 +119,8 @@ export function CabinetGroup({ data }: CabinetGroupProps) {
           </group>
         )
       })()}
+
+      <DragHandler cabinetId={data.id} width={width} height={height} depth={depth} />
 
       {/* Selection / hover highlight */}
       {(isSelected || isHovered) && (
