@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 import { useStore, useTemporalStore } from '../store/useStore'
 import { findPlacementPosition, getYPosition } from '../systems/placement'
 import { Sidebar } from './sidebar/Sidebar'
@@ -6,6 +6,16 @@ import { Toolbar } from './toolbar/Toolbar'
 import { SceneCanvas } from './viewport/SceneCanvas'
 
 export function Layout() {
+  const cameraPresetRef = useRef<((preset: 'front' | 'top' | 'orbit') => void) | null>(null)
+
+  const handleCameraPresetReady = useCallback((fn: (preset: 'front' | 'top' | 'orbit') => void) => {
+    cameraPresetRef.current = fn
+  }, [])
+
+  const handleCameraPreset = useCallback((preset: 'front' | 'top' | 'orbit') => {
+    cameraPresetRef.current?.(preset)
+  }, [])
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const state = useStore.getState()
@@ -65,9 +75,9 @@ export function Layout() {
         <Sidebar />
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <Toolbar />
+        <Toolbar onCameraPreset={handleCameraPreset} />
         <div style={{ flex: 1, position: 'relative' }}>
-          <SceneCanvas />
+          <SceneCanvas onCameraPresetReady={handleCameraPresetReady} />
           <div style={{
             position: 'absolute',
             bottom: 10,

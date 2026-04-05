@@ -1,17 +1,59 @@
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, Environment } from '@react-three/drei'
 import { WallEnvironment } from './WallEnvironment'
 import { CabinetGroup } from './CabinetGroup'
 import { CountertopMesh } from './CountertopMesh'
 import { DimensionLabels } from './DimensionLabels'
 import { useStore } from '../../store/useStore'
-import { useRef } from 'react'
+import { useRef, useEffect, useCallback } from 'react'
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib'
 
-export function SceneCanvas() {
+function CameraPresetHandler({ controlsRef, onReady }: {
+  controlsRef: React.RefObject<OrbitControlsType | null>
+  onReady: (fn: (preset: 'front' | 'top' | 'orbit') => void) => void
+}) {
+  const { camera } = useThree()
+  const wall = useStore((s) => s.wall)
+
+  useEffect(() => {
+    const cx = wall.width / 2
+    const cy = wall.height / 2
+    onReady((preset: 'front' | 'top' | 'orbit') => {
+      const controls = controlsRef.current
+      if (!controls) return
+      switch (preset) {
+        case 'front':
+          camera.position.set(cx, cy, 150)
+          controls.target.set(cx, cy, 0)
+          break
+        case 'top':
+          camera.position.set(cx, wall.height + 100, 10)
+          controls.target.set(cx, 0, 10)
+          break
+        case 'orbit':
+          camera.position.set(cx, cy, 120)
+          controls.target.set(cx, 40, 0)
+          break
+      }
+      controls.update()
+    })
+  }, [camera, controlsRef, onReady, wall])
+
+  return null
+}
+
+interface SceneCanvasProps {
+  onCameraPresetReady?: (fn: (preset: 'front' | 'top' | 'orbit') => void) => void
+}
+
+export function SceneCanvas({ onCameraPresetReady }: SceneCanvasProps) {
   const controlsRef = useRef<OrbitControlsType>(null)
   const cabinets = useStore((s) => s.cabinets)
   const countertops = useStore((s) => s.countertops)
+
+  const handleReady = useCallback((fn: (preset: 'front' | 'top' | 'orbit') => void) => {
+    onCameraPresetReady?.(fn)
+  }, [onCameraPresetReady])
 
   return (
     <Canvas
@@ -36,6 +78,7 @@ export function SceneCanvas() {
         minDistance={20}
         maxDistance={400}
       />
+      <CameraPresetHandler controlsRef={controlsRef} onReady={handleReady} />
       <WallEnvironment />
 
       {Object.values(cabinets).map((cab) => (

@@ -1,4 +1,5 @@
 import type { CountertopData, CabinetData } from '../../types'
+import { getFinish } from '../../catalog/finishes'
 
 const T = 0.75
 
@@ -28,7 +29,7 @@ export function CountertopMesh({ data, cabinets }: CountertopMeshProps) {
   return (
     <mesh position={[x + ctWidth / 2, y + T / 2, z + ctDepth / 2]} castShadow>
       <boxGeometry args={[ctWidth, T, ctDepth]} />
-      <meshStandardMaterial color="#222222" roughness={0.3} metalness={0.1} />
+      <meshStandardMaterial color={getFinish(data.color).hex} roughness={0.3} metalness={0.1} />
     </mesh>
   )
 }
