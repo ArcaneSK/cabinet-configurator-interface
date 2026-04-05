@@ -1,4 +1,5 @@
 import { SceneCanvas } from './viewport/SceneCanvas'
+import { Sidebar } from './sidebar/Sidebar'
 
 export function Layout() {
   return (
@@ -10,7 +11,7 @@ export function Layout() {
         borderRight: '1px solid var(--border)',
         overflowY: 'auto',
       }}>
-        Sidebar
+        <Sidebar />
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <div style={{
