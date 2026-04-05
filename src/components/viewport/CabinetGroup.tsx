@@ -96,28 +96,28 @@ export function CabinetGroup({ data }: CabinetGroupProps) {
       )}
 
       {/* Applied ends */}
-      {data.appliedEndLeft && (
-        <group position={[-(T + 0.01), 0, 0]}>
-          <mesh position={[0, height / 2, depth / 2]} castShadow>
-            <boxGeometry args={[T, height, depth]} />
-            <meshStandardMaterial
-              color={getFinish(data.appliedEndLeft).hex}
-              roughness={getFinish(data.appliedEndLeft).roughness}
-            />
-          </mesh>
-        </group>
-      )}
-      {data.appliedEndRight && (
-        <group position={[width + 0.01, 0, 0]}>
-          <mesh position={[0, height / 2, depth / 2]} castShadow>
-            <boxGeometry args={[T, height, depth]} />
-            <meshStandardMaterial
-              color={getFinish(data.appliedEndRight).hex}
-              roughness={getFinish(data.appliedEndRight).roughness}
-            />
-          </mesh>
-        </group>
-      )}
+      {data.appliedEndLeft && (() => {
+        const finish = getFinish(data.appliedEndLeft)
+        return (
+          <group position={[-(T / 2 + 0.01), 0, 0]}>
+            <mesh position={[0, height / 2, depth / 2]} castShadow>
+              <boxGeometry args={[T, height, depth]} />
+              <meshStandardMaterial color={finish.hex} roughness={finish.roughness} />
+            </mesh>
+          </group>
+        )
+      })()}
+      {data.appliedEndRight && (() => {
+        const finish = getFinish(data.appliedEndRight)
+        return (
+          <group position={[width + T / 2 + 0.01, 0, 0]}>
+            <mesh position={[0, height / 2, depth / 2]} castShadow>
+              <boxGeometry args={[T, height, depth]} />
+              <meshStandardMaterial color={finish.hex} roughness={finish.roughness} />
+            </mesh>
+          </group>
+        )
+      })()}
 
       {/* Selection / hover highlight */}
       {(isSelected || isHovered) && (
