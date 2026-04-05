@@ -2,6 +2,7 @@ import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Environment } from '@react-three/drei'
 import { WallEnvironment } from './WallEnvironment'
 import { CabinetGroup } from './CabinetGroup'
+import { CountertopMesh } from './CountertopMesh'
 import { useStore } from '../../store/useStore'
 import { useRef } from 'react'
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib'
@@ -9,6 +10,7 @@ import type { OrbitControls as OrbitControlsType } from 'three-stdlib'
 export function SceneCanvas() {
   const controlsRef = useRef<OrbitControlsType>(null)
   const cabinets = useStore((s) => s.cabinets)
+  const countertops = useStore((s) => s.countertops)
 
   return (
     <Canvas
@@ -37,6 +39,10 @@ export function SceneCanvas() {
 
       {Object.values(cabinets).map((cab) => (
         <CabinetGroup key={cab.id} data={cab} />
+      ))}
+
+      {Object.values(countertops).map((ct) => (
+        <CountertopMesh key={ct.id} data={ct} cabinets={cabinets} />
       ))}
 
       {/* Click on empty space to deselect */}
