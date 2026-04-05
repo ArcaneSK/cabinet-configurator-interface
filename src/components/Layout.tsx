@@ -66,8 +66,19 @@ export function Layout() {
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <Toolbar />
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, position: 'relative' }}>
           <SceneCanvas />
+          <div style={{
+            position: 'absolute',
+            bottom: 10,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            color: 'var(--text-muted)',
+            fontSize: 11,
+            pointerEvents: 'none',
+          }}>
+            Click to select · Drag to move · Scroll to zoom
+          </div>
         </div>
       </div>
     </div>
