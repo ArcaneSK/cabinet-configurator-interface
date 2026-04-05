@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Cabinet with Babylon.js</title>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+
+    <style>
+        #renderCanvas {
+            width: 100%;
+            height: 90vh; /* Full height of the viewport */
+            touch-action: none;
+        }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 10px;
+            font-size: 16px;
+            z-index: 100;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+            max-width: 200px;
+        }
+        #controls label {
+            display: block;
+            margin-top: 10px;
+        }
+        #controls input[type="range"],
+        #controls select {
+            width: 100%;
+        }
+        #controls button {
+            margin-top: 10px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="renderCanvas" touch-action="none"></canvas>
+    <!-- div id="controls">
+        <button id="toggleDoorButton">Toggle Door</button>
+        <button id="clearSelectionButton">Clear Selection</button>
+
+        <label for="widthSlider">Width (in inches)</label>
+        <input type="range" id="widthSlider" min="10" max="60" value="30" step="1">
+
+        <label for="heightSlider">Height (in inches)</label>
+        <input type="range" id="heightSlider" min="24" max="96" value="72" step="1">
+
+        <label for="depthSlider">Depth (in inches)</label>
+        <input type="range" id="depthSlider" min="12" max="36" value="24" step="1">
+
+        <label for="doorConfigSelect">Door Configuration</label>
+        <select id="doorConfigSelect">
+            <option value="single">Single Door</option>
+            <option value="double">Double Door</option>
+        </select>
+
+        <label for="handleSideSelect">Handle Side</label>
+        <select id="handleSideSelect">
+            <option value="right">Right</option>
+            <option value="left">Left</option>
+        </select>
+
+        <button id="addCabinetButton">Add Cabinet</button>
+    </div -->
+    <script src="playground/cubetest.js"></script>
+</body>
+</html>

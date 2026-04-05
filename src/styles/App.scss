@@ -1,0 +1,33 @@
+body {
+    font-family: system-ui, sans-serif;
+    background: #f0f2f5;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .configurator {
+    display: flex;
+    height: 100vh;
+    flex-wrap: wrap;
+  
+    .sidebar {
+      flex: 1 1 350px;
+      background: #fff;
+      padding: 1rem;
+      overflow-y: auto;
+      border-right: 1px solid #dee2e6;
+    }
+  
+    .canvas-container {
+      flex: 2 1 60%;
+      background: #222;
+      position: relative;
+  
+      canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+    }
+  }
+  
