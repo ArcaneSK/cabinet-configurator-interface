@@ -3,6 +3,7 @@ import { OrbitControls, Environment } from '@react-three/drei'
 import { WallEnvironment } from './WallEnvironment'
 import { CabinetGroup } from './CabinetGroup'
 import { CountertopMesh } from './CountertopMesh'
+import { DimensionLabels } from './DimensionLabels'
 import { useStore } from '../../store/useStore'
 import { useRef } from 'react'
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib'
@@ -44,6 +45,8 @@ export function SceneCanvas() {
       {Object.values(countertops).map((ct) => (
         <CountertopMesh key={ct.id} data={ct} cabinets={cabinets} />
       ))}
+
+      <DimensionLabels />
 
       {/* Click on empty space to deselect */}
       <mesh
