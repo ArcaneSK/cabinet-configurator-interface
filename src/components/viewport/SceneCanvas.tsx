@@ -6,7 +6,7 @@ import { CountertopMesh } from './CountertopMesh'
 import { DimensionLabels } from './DimensionLabels'
 import { GhostOverlay } from './GhostOverlay'
 import { useStore } from '../../store/useStore'
-import { useRef, useEffect, useCallback } from 'react'
+import { Suspense, useRef, useEffect, useCallback } from 'react'
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib'
 import * as THREE from 'three'
 
@@ -126,7 +126,9 @@ export function SceneCanvas({ onCameraPresetReady, onCameraRef }: SceneCanvasPro
       <WallEnvironment />
 
       {Object.values(cabinets).map((cab) => (
-        <CabinetGroup key={cab.id} data={cab} />
+        <Suspense key={cab.id} fallback={null}>
+          <CabinetGroup data={cab} />
+        </Suspense>
       ))}
 
       {Object.values(countertops).map((ct) => (

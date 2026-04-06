@@ -5,6 +5,7 @@ import type { CabinetData } from '../../types'
 import { useStore } from '../../store/useStore'
 import { getStyle } from '../../catalog/styles'
 import { getFinish } from '../../catalog/finishes'
+import { CabinetMaterial } from './CabinetMaterial'
 import { CabinetBox } from './CabinetBox'
 import { Doors } from './Doors'
 import { Drawers } from './Drawers'
@@ -107,23 +108,23 @@ export function CabinetGroup({ data }: CabinetGroupProps) {
 
       {/* Applied ends */}
       {data.appliedEndLeft && (() => {
-        const finish = getFinish(data.appliedEndLeft)
+        const endFinish = getFinish(data.appliedEndLeft)
         return (
           <group position={[-(T / 2 + 0.01), 0, 0]}>
             <mesh position={[0, height / 2, depth / 2]} castShadow>
               <boxGeometry args={[T, height, depth]} />
-              <meshStandardMaterial color={finish.hex} roughness={finish.roughness} />
+              <CabinetMaterial finish={endFinish} />
             </mesh>
           </group>
         )
       })()}
       {data.appliedEndRight && (() => {
-        const finish = getFinish(data.appliedEndRight)
+        const endFinish = getFinish(data.appliedEndRight)
         return (
           <group position={[width + T / 2 + 0.01, 0, 0]}>
             <mesh position={[0, height / 2, depth / 2]} castShadow>
               <boxGeometry args={[T, height, depth]} />
-              <meshStandardMaterial color={finish.hex} roughness={finish.roughness} />
+              <CabinetMaterial finish={endFinish} />
             </mesh>
           </group>
         )

@@ -8,6 +8,7 @@ import { applySnap, clampToWall } from '../../systems/snap'
 import { checkCollision } from '../../systems/collision'
 
 const DRAG_THRESHOLD = 4
+const T = 0.75
 
 export const cabinetDragActive = { current: false }
 
@@ -163,13 +164,13 @@ export function DragHandler({ cabinetId, width, height, depth }: DragHandlerProp
 
   return (
     <mesh
-      position={[width / 2, height / 2, depth / 2]}
+      position={[width / 2, height / 2, depth + T]}
       visible={false}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
     >
-      <boxGeometry args={[width, height, depth]} />
+      <planeGeometry args={[width, height]} />
     </mesh>
   )
 }

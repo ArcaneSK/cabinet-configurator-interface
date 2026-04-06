@@ -34,8 +34,8 @@ export function WallEnvironment() {
         fadeStrength={1}
       />
 
-      {/* Wall boundary lines */}
-      <lineSegments>
+      {/* Wall boundary lines — key forces remount when dimensions change */}
+      <lineSegments key={`wall-${wall.width}-${wall.height}`}>
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"

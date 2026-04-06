@@ -1,8 +1,9 @@
 import { getFinish } from '../../catalog/finishes'
+import { CabinetMaterial } from './CabinetMaterial'
 import { Handle } from './Handle'
 
 const T = 0.75
-const REVEAL = 1 / 16
+const REVEAL = 3 / 8 // 3/8" gap on each side = 3/4" total reveal per door
 
 interface DoorsProps {
   doorCount: 1 | 2
@@ -16,7 +17,8 @@ interface DoorsProps {
 
 export function Doors({ doorCount, width, doorZoneTop, doorZoneBottom, depth, faceColor, handleSide }: DoorsProps) {
   const finish = getFinish(faceColor)
-  const openingW = width - 2 * T - 2 * REVEAL
+  // Full overlay: doors cover the face frame, with REVEAL gap on each outer edge
+  const openingW = width - 2 * REVEAL
   const doorH = doorZoneTop - doorZoneBottom - 2 * REVEAL
   const doorCenterY = (doorZoneTop + doorZoneBottom) / 2
   const doorZ = depth + T / 2
@@ -24,23 +26,23 @@ export function Doors({ doorCount, width, doorZoneTop, doorZoneBottom, depth, fa
   if (doorCount === 1) {
     const doorW = openingW
     const handleX = handleSide === 'left'
-      ? T + REVEAL + 2
-      : width - T - REVEAL - 2
+      ? REVEAL + 2
+      : width - REVEAL - 2
     return (
       <group>
         <mesh position={[width / 2, doorCenterY, doorZ]} castShadow>
           <boxGeometry args={[doorW, doorH, T]} />
-          <meshStandardMaterial color={finish.hex} roughness={finish.roughness} />
+          <CabinetMaterial finish={finish} />
         </mesh>
         <Handle position={[handleX, doorCenterY, depth + T]} />
       </group>
     )
   }
 
-  // Double door
+  // Double door — REVEAL gap between the two doors as well
   const doorW = (openingW - REVEAL) / 2
-  const leftCenterX = T + REVEAL + doorW / 2
-  const rightCenterX = width - T - REVEAL - doorW / 2
+  const leftCenterX = REVEAL + doorW / 2
+  const rightCenterX = width - REVEAL - doorW / 2
 
   return (
     <group>
