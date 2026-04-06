@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback } from 'react'
 import type { Group } from 'three'
+import type { ThreeEvent } from '@react-three/fiber'
 import type { CabinetData } from '../../types'
 import { useStore } from '../../store/useStore'
 import { getStyle } from '../../catalog/styles'
@@ -20,6 +21,7 @@ export function CabinetGroup({ data }: CabinetGroupProps) {
   const groupRef = useRef<Group>(null)
   const selectedIds = useStore((s) => s.selectedIds)
   const setSelected = useStore((s) => s.setSelected)
+  const toggleSelected = useStore((s) => s.toggleSelected)
   const isSelected = selectedIds.has(data.id)
   const [isHovered, setIsHovered] = useState(false)
 
@@ -52,10 +54,14 @@ export function CabinetGroup({ data }: CabinetGroupProps) {
     ? drawerZoneBottom
     : (interiorTop + interiorBottom) / 2
 
-  const handleClick = useCallback((e: { stopPropagation: () => void }) => {
+  const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
-    setSelected(data.id)
-  }, [data.id, setSelected])
+    if (e.shiftKey) {
+      toggleSelected(data.id)
+    } else {
+      setSelected(data.id)
+    }
+  }, [data.id, setSelected, toggleSelected])
 
   return (
     <group
