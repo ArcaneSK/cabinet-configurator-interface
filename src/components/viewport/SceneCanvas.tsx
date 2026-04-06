@@ -95,7 +95,7 @@ export function SceneCanvas({ onCameraPresetReady }: SceneCanvasProps) {
       <mesh
         position={[96, 54, -1]}
         visible={false}
-        onClick={() => useStore.getState().setSelected(null)}
+        onClick={() => useStore.getState().clearSelection()}
       >
         <planeGeometry args={[500, 500]} />
       </mesh>

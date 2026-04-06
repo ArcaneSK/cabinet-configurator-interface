@@ -3,11 +3,16 @@ import { finishes } from '../../catalog/finishes'
 import { getStyle } from '../../catalog/styles'
 
 export function CabinetProperties() {
-  const selectedId = useStore((s) => s.selectedId)
+  const selectedIds = useStore((s) => s.selectedIds)
   const cabinets = useStore((s) => s.cabinets)
   const updateCabinet = useStore((s) => s.updateCabinet)
   const removeCabinet = useStore((s) => s.removeCabinet)
 
+  const selectedId = selectedIds.size === 1 ? Array.from(selectedIds)[0] : null
+
+  if (selectedIds.size > 1) {
+    return <div style={{ padding: 8, color: 'var(--text-muted)', fontSize: 12 }}>{selectedIds.size} cabinets selected</div>
+  }
   if (!selectedId || !cabinets[selectedId]) return null
 
   const cab = cabinets[selectedId]

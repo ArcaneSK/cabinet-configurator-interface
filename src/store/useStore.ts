@@ -1,7 +1,10 @@
 import { create } from 'zustand'
 import { temporal } from 'zundo'
 import { v4 as uuid } from 'uuid'
-import type { CabinetData, CountertopData, SnapSettings, WallConfig } from '../types'
+import type {
+  CabinetData, CountertopData, SnapSettings, WallConfig,
+  CabinetSnapshot, GhostModeState, GizmoStyle
+} from '../types'
 
 interface AppState {
   // Wall
@@ -12,16 +15,33 @@ interface AppState {
   cabinets: Record<string, CabinetData>
   addCabinet: (cabinet: Omit<CabinetData, 'id'>) => string
   updateCabinet: (id: string, updates: Partial<CabinetData>) => void
+  updateCabinets: (updates: Record<string, Partial<CabinetData>>) => void
   removeCabinet: (id: string) => void
+  removeCabinets: (ids: Set<string>) => void
 
   // Countertops
   countertops: Record<string, CountertopData>
   addCountertop: (cabinetIds: string[]) => string
   removeCountertop: (id: string) => void
 
-  // Selection
-  selectedId: string | null
-  setSelected: (id: string | null) => void
+  // Selection (multi-select)
+  selectedIds: Set<string>
+  setSelected: (id: string) => void
+  toggleSelected: (id: string) => void
+  setSelectedMany: (ids: Set<string>) => void
+  clearSelection: () => void
+  selectAll: () => void
+
+  // Clipboard & ghost mode
+  clipboard: CabinetSnapshot[]
+  ghostMode: GhostModeState | null
+  copySelection: () => void
+  setGhostMode: (mode: GhostModeState | null) => void
+  cancelGhostMode: () => void
+
+  // Gizmo style
+  gizmoStyle: GizmoStyle
+  setGizmoStyle: (style: GizmoStyle) => void
 
   // Snap settings
   snapSettings: SnapSettings
@@ -34,7 +54,7 @@ interface AppState {
 
 export const useStore = create<AppState>()(
   temporal(
-    (set) => ({
+    (set, get) => ({
       // Wall
       wall: { width: 192, height: 108 },
       setWall: (updates) =>
@@ -56,17 +76,42 @@ export const useStore = create<AppState>()(
             [id]: { ...state.cabinets[id], ...updates },
           },
         })),
+      updateCabinets: (updates) =>
+        set((state) => {
+          const cabinets = { ...state.cabinets }
+          for (const [id, partial] of Object.entries(updates)) {
+            if (cabinets[id]) {
+              cabinets[id] = { ...cabinets[id], ...partial }
+            }
+          }
+          return { cabinets }
+        }),
       removeCabinet: (id) =>
         set((state) => {
           const { [id]: _, ...rest } = state.cabinets
-          // Remove any countertops that reference this cabinet
           const countertops = { ...state.countertops }
           for (const [ctId, ct] of Object.entries(countertops)) {
             if (ct.cabinetIds.includes(id)) {
               delete countertops[ctId]
             }
           }
-          return { cabinets: rest, countertops, selectedId: state.selectedId === id ? null : state.selectedId }
+          const newSelected = new Set(state.selectedIds)
+          newSelected.delete(id)
+          return { cabinets: rest, countertops, selectedIds: newSelected }
+        }),
+      removeCabinets: (ids) =>
+        set((state) => {
+          const cabinets = { ...state.cabinets }
+          const countertops = { ...state.countertops }
+          for (const id of ids) {
+            delete cabinets[id]
+            for (const [ctId, ct] of Object.entries(countertops)) {
+              if (ct.cabinetIds.includes(id)) {
+                delete countertops[ctId]
+              }
+            }
+          }
+          return { cabinets, countertops, selectedIds: new Set<string>() }
         }),
 
       // Countertops
@@ -74,7 +119,6 @@ export const useStore = create<AppState>()(
       addCountertop: (cabinetIds) => {
         const id = uuid()
         set((state) => {
-          // Compute length from cabinet widths + overhang
           const totalWidth = cabinetIds.reduce((sum, cid) => {
             const cab = state.cabinets[cid]
             return cab ? sum + cab.width : sum
@@ -82,8 +126,8 @@ export const useStore = create<AppState>()(
           const ct: CountertopData = {
             id,
             cabinetIds,
-            length: totalWidth + 1, // 0.5" overhang each side
-            depth: 25, // 24" base depth + 1" front overhang
+            length: totalWidth + 1,
+            depth: 25,
             color: 'black',
             overhang: { front: 1, sides: 0.5 },
           }
@@ -98,8 +142,49 @@ export const useStore = create<AppState>()(
         }),
 
       // Selection
-      selectedId: null,
-      setSelected: (id) => set({ selectedId: id }),
+      selectedIds: new Set<string>(),
+      setSelected: (id) => set({ selectedIds: new Set([id]) }),
+      toggleSelected: (id) =>
+        set((state) => {
+          const next = new Set(state.selectedIds)
+          if (next.has(id)) next.delete(id)
+          else next.add(id)
+          return { selectedIds: next }
+        }),
+      setSelectedMany: (ids) => set({ selectedIds: ids }),
+      clearSelection: () => set({ selectedIds: new Set<string>() }),
+      selectAll: () =>
+        set((state) => ({
+          selectedIds: new Set(Object.keys(state.cabinets)),
+        })),
+
+      // Clipboard & ghost mode
+      clipboard: [],
+      ghostMode: null,
+      copySelection: () => {
+        const state = get()
+        const selected = Array.from(state.selectedIds)
+          .map((id) => state.cabinets[id])
+          .filter(Boolean)
+        if (selected.length === 0) return
+
+        // Centroid = average center-point X of all selected cabinets
+        const centroidX =
+          selected.reduce((sum, c) => sum + c.position.x + c.width / 2, 0) /
+          selected.length
+
+        const snapshots: CabinetSnapshot[] = selected.map((c) => {
+          const { id: _, ...rest } = c
+          return { ...rest, offsetX: c.position.x - centroidX }
+        })
+        set({ clipboard: snapshots })
+      },
+      setGhostMode: (mode) => set({ ghostMode: mode }),
+      cancelGhostMode: () => set({ ghostMode: null }),
+
+      // Gizmo style
+      gizmoStyle: 'arrows',
+      setGizmoStyle: (style) => set({ gizmoStyle: style }),
 
       // Snap
       snapSettings: { grid: true, adjacent: true, gridSize: 1 },
@@ -113,13 +198,17 @@ export const useStore = create<AppState>()(
       setShowDimensions: (show) => set({ showDimensions: show }),
     }),
     {
-      // Only track state changes for undo/redo, exclude selection and UI toggles
+      // Exclude transient UI state from undo/redo history
       partialize: (state) => {
-        const { selectedId, showDimensions, ...rest } = state
+        const {
+          selectedIds, clipboard, ghostMode, gizmoStyle,
+          showDimensions, ...rest
+        } = state
         return rest
       },
     }
   )
 )
 
+// useTemporalStore is unchanged from existing code
 export const useTemporalStore = () => useStore.temporal

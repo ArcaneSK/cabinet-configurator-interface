@@ -61,3 +61,31 @@ export interface SizeCatalog {
   heights: number[]
   depths: number[]
 }
+
+export type CabinetSnapshot = Omit<CabinetData, 'id'> & {
+  offsetX: number // X position relative to group centroid (center-point average)
+}
+
+export interface GhostCabinet {
+  position: [number, number, number]
+  width: number
+  height: number
+  depth: number
+  type: CabinetType
+  style: CabinetStyle
+  color: string         // faceColor for rendering
+  offsetX: number       // offset from anchor point
+  // Full snapshot data for placement (preserves handleSide, appliedEnds, boxColor, isCustomSize)
+  snapshot?: CabinetSnapshot
+}
+
+export type GhostModeType = 'paste' | 'duplicate' | 'sidebar-drag'
+
+export interface GhostModeState {
+  type: GhostModeType
+  ghosts: GhostCabinet[]
+  anchorWorldX: number
+  isColliding: boolean
+}
+
+export type GizmoStyle = 'arrows' | 'translate' | 'boundingBox'

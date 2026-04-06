@@ -32,18 +32,22 @@ export function Layout() {
         temporal.redo()
       }
       // Delete — remove selected
-      if ((e.key === 'Delete' || e.key === 'Backspace') && state.selectedId) {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && state.selectedIds.size > 0) {
         if ((e.target as HTMLElement).tagName === 'INPUT') return
-        state.removeCabinet(state.selectedId)
+        state.removeCabinets(state.selectedIds)
       }
-      // Escape — deselect
+      // Escape — cancel ghost mode first, then deselect
       if (e.key === 'Escape') {
-        state.setSelected(null)
+        if (state.ghostMode) {
+          state.cancelGhostMode()
+        } else {
+          state.clearSelection()
+        }
       }
-      // Ctrl+D — duplicate
-      if (e.ctrlKey && e.key === 'd' && state.selectedId) {
+      // Ctrl+D — duplicate (single selection only)
+      if (e.ctrlKey && e.key === 'd' && state.selectedIds.size > 0) {
         e.preventDefault()
-        const cab = state.cabinets[state.selectedId]
+        const cab = state.cabinets[Array.from(state.selectedIds)[0]]
         if (!cab) return
         const { id: _, ...cabData } = cab
         const x = findPlacementPosition(

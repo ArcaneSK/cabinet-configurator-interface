@@ -18,9 +18,9 @@ interface CabinetGroupProps {
 
 export function CabinetGroup({ data }: CabinetGroupProps) {
   const groupRef = useRef<Group>(null)
-  const selectedId = useStore((s) => s.selectedId)
+  const selectedIds = useStore((s) => s.selectedIds)
   const setSelected = useStore((s) => s.setSelected)
-  const isSelected = selectedId === data.id
+  const isSelected = selectedIds.has(data.id)
   const [isHovered, setIsHovered] = useState(false)
 
   const style = getStyle(data.style)

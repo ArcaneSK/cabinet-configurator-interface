@@ -27,7 +27,7 @@ function Section({ title, defaultOpen = true, children, badge }: SectionProps) {
 }
 
 export function Sidebar() {
-  const selectedId = useStore((s) => s.selectedId)
+  const selectedIds = useStore((s) => s.selectedIds)
   const wall = useStore((s) => s.wall)
 
   return (
@@ -38,7 +38,7 @@ export function Sidebar() {
       <Section title="Add Cabinet">
         <CabinetCatalog />
       </Section>
-      {selectedId && (
+      {selectedIds.size > 0 && (
         <Section title="Selected Cabinet">
           <CabinetProperties />
         </Section>
