@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Legacy prototype
+3d-cab-test/
+
 # Tool config
 .claude/
 .superpowers/
