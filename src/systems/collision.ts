@@ -1,8 +1,8 @@
 import type { CabinetData } from '../types'
 
-type CollisionLayer = 'floor' | 'wall'
+export type CollisionLayer = 'floor' | 'wall'
 
-function getCollisionLayer(type: CabinetData['type']): CollisionLayer[] {
+export function getCollisionLayer(type: CabinetData['type']): CollisionLayer[] {
   switch (type) {
     case 'base': return ['floor']
     case 'upper': return ['wall']
@@ -17,12 +17,15 @@ function layersOverlap(a: CollisionLayer[], b: CollisionLayer[]): boolean {
 export function checkCollision(
   candidate: { x: number; width: number; type: CabinetData['type']; height: number; y: number },
   others: CabinetData[],
-  excludeId?: string
+  excludeIds?: string | Set<string>
 ): boolean {
   const candidateLayers = getCollisionLayer(candidate.type)
+  const excludeSet = typeof excludeIds === 'string'
+    ? new Set([excludeIds])
+    : excludeIds ?? new Set()
 
   for (const other of others) {
-    if (other.id === excludeId) continue
+    if (excludeSet.has(other.id)) continue
 
     const otherLayers = getCollisionLayer(other.type)
     if (!layersOverlap(candidateLayers, otherLayers)) continue
