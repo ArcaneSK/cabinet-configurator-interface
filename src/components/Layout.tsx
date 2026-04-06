@@ -238,7 +238,7 @@ export function Layout() {
             onCameraPresetReady={handleCameraPresetReady}
             onCameraRef={handleCameraRef}
           />
-          <MarqueeOverlay canvasContainer={canvasContainerRef.current} camera={cameraRef.current} />
+          <MarqueeOverlay canvasContainerRef={canvasContainerRef} camera={cameraRef.current} />
           <div style={{
             position: 'absolute',
             bottom: 10,

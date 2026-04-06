@@ -16,7 +16,6 @@ export function GhostOverlay() {
   // Mutable refs for per-frame tracking (no React re-renders)
   const ghostPositions = useRef<[number, number, number][]>([])
   const isColliding = useRef(false)
-  const anchorX = useRef(0)
   const needsUpdate = useRef(false)
   // React state only for rendering
   const [renderState, setRenderState] = useState<{
@@ -82,7 +81,6 @@ export function GhostOverlay() {
 
     // Update refs
     ghostPositions.current = positions
-    anchorX.current = ax
     ghostAnchorX.current = ax
     const collidingChanged = isColliding.current !== colliding
     isColliding.current = colliding
@@ -109,9 +107,8 @@ export function GhostOverlay() {
     const state = useStore.getState()
     if (!state.ghostMode) return
 
-    // Right-click cancels ghost mode
+    // Right-click cancels ghost mode (no stopPropagation so OrbitControls can still orbit)
     if (e.button === 2) {
-      e.stopPropagation()
       state.cancelGhostMode()
       return
     }

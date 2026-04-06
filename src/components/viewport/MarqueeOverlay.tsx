@@ -6,11 +6,11 @@ import * as THREE from 'three'
 const DRAG_THRESHOLD = 4
 
 interface MarqueeOverlayProps {
-  canvasContainer: HTMLDivElement | null
+  canvasContainerRef: React.RefObject<HTMLDivElement | null>
   camera: THREE.Camera | null
 }
 
-export function MarqueeOverlay({ canvasContainer, camera }: MarqueeOverlayProps) {
+export function MarqueeOverlay({ canvasContainerRef, camera }: MarqueeOverlayProps) {
   const [rect, setRect] = useState<{ left: number; top: number; width: number; height: number } | null>(null)
 
   // Keep a stable ref to camera so the pointer-event closure always sees the latest value
@@ -18,25 +18,23 @@ export function MarqueeOverlay({ canvasContainer, camera }: MarqueeOverlayProps)
   useEffect(() => { cameraRef.current = camera }, [camera])
 
   useEffect(() => {
-    if (!canvasContainer) return
-
     let isDown = false
     let startX = 0
     let startY = 0
     let didDrag = false
-    let shiftHeld = false
 
     const onPointerDown = (e: PointerEvent) => {
       if (e.button !== 0) return
       // Only start on the canvas element itself
-      const canvas = canvasContainer.querySelector('canvas')
+      const container = canvasContainerRef.current
+      if (!container) return
+      const canvas = container.querySelector('canvas')
       if (e.target !== canvas) return
 
       isDown = true
       startX = e.clientX
       startY = e.clientY
       didDrag = false
-      shiftHeld = e.shiftKey
     }
 
     const onPointerMove = (e: PointerEvent) => {
@@ -73,7 +71,7 @@ export function MarqueeOverlay({ canvasContainer, camera }: MarqueeOverlayProps)
 
       if (!didDrag) {
         // Simple click on empty space — deselect (unless shift)
-        if (!shiftHeld) {
+        if (!e.shiftKey) {
           useStore.getState().clearSelection()
         }
         setRect(null)
@@ -92,7 +90,9 @@ export function MarqueeOverlay({ canvasContainer, camera }: MarqueeOverlayProps)
       if (!cam) { setRect(null); return }
 
       const state = useStore.getState()
-      const canvasBounds = canvasContainer.getBoundingClientRect()
+      const container = canvasContainerRef.current
+      if (!container) { setRect(null); return }
+      const canvasBounds = container.getBoundingClientRect()
       const matched = new Set<string>()
 
       for (const cab of Object.values(state.cabinets)) {
@@ -157,7 +157,7 @@ export function MarqueeOverlay({ canvasContainer, camera }: MarqueeOverlayProps)
       window.removeEventListener('pointerup', onPointerUp)
       window.removeEventListener('keydown', onKeyDown)
     }
-  }, [canvasContainer])
+  }, [canvasContainerRef])
 
   if (!rect) return null
 

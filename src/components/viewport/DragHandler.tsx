@@ -3,6 +3,7 @@ import { useThree } from '@react-three/fiber'
 import type { ThreeEvent } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useStore } from '../../store/useStore'
+import type { CabinetData } from '../../types'
 import { applySnap, clampToWall } from '../../systems/snap'
 import { checkCollision } from '../../systems/collision'
 
@@ -145,7 +146,7 @@ export function DragHandler({ cabinetId, width, height, depth }: DragHandlerProp
       }
 
       // Batch update all positions (single undo entry)
-      const updates: Record<string, Partial<import('../../types').CabinetData>> = {}
+      const updates: Record<string, Partial<CabinetData>> = {}
       for (const sc of selectedCabs) {
         updates[sc.id] = { position: { x: sc.position.x + snapDelta, y: sc.position.y } }
       }
@@ -153,11 +154,12 @@ export function DragHandler({ cabinetId, width, height, depth }: DragHandlerProp
     }
   }, [cabinetId, width, raycastToPlane])
 
-  const onPointerUp = useCallback(() => {
+  const onPointerUp = useCallback((e: ThreeEvent<PointerEvent>) => {
     isDragging.current = false
     dragStarted.current = false
     cabinetDragActive.current = false
-  }, [])
+    gl.domElement.releasePointerCapture(e.nativeEvent.pointerId)
+  }, [gl])
 
   return (
     <mesh
