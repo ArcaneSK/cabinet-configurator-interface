@@ -6,6 +6,7 @@ import { Toolbar } from './toolbar/Toolbar'
 import { SceneCanvas } from './viewport/SceneCanvas'
 import { MarqueeOverlay } from './viewport/MarqueeOverlay'
 import * as THREE from 'three'
+import type { GhostCabinet } from '../types'
 
 export function Layout() {
   const cameraPresetRef = useRef<((preset: 'front' | 'top' | 'orbit') => void) | null>(null)
@@ -52,6 +53,40 @@ export function Layout() {
           state.clearSelection()
         }
       }
+      // Ctrl+C — copy
+      if (e.ctrlKey && e.key === 'c' && state.selectedIds.size > 0) {
+        e.preventDefault()
+        state.copySelection()
+      }
+
+      // Ctrl+V — paste (enter ghost mode)
+      if (e.ctrlKey && e.key === 'v' && state.clipboard.length > 0) {
+        e.preventDefault()
+        const ghosts: GhostCabinet[] = state.clipboard.map((snap) => ({
+          position: [snap.offsetX, snap.position.y, 0] as [number, number, number],
+          width: snap.width,
+          height: snap.height,
+          depth: snap.depth,
+          type: snap.type,
+          style: snap.style,
+          color: snap.faceColor,
+          offsetX: snap.offsetX,
+          snapshot: snap, // preserve full data for placement
+        }))
+        state.setGhostMode({
+          type: 'paste',
+          ghosts,
+          anchorWorldX: 0,
+          isColliding: false,
+        })
+      }
+
+      // Ctrl+A — select all
+      if (e.ctrlKey && e.key === 'a' && !state.ghostMode) {
+        e.preventDefault()
+        state.selectAll()
+      }
+
       // Ctrl+D — duplicate (single selection only)
       if (e.ctrlKey && e.key === 'd' && state.selectedIds.size > 0) {
         e.preventDefault()
