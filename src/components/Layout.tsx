@@ -1,12 +1,11 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { useStore, useTemporalStore } from '../store/useStore'
-import { findPlacementPosition, getYPosition } from '../systems/placement'
 import { Sidebar } from './sidebar/Sidebar'
 import { Toolbar } from './toolbar/Toolbar'
 import { SceneCanvas } from './viewport/SceneCanvas'
 import { MarqueeOverlay } from './viewport/MarqueeOverlay'
 import * as THREE from 'three'
-import type { GhostCabinet } from '../types'
+import type { GhostCabinet, CabinetSnapshot } from '../types'
 
 export function Layout() {
   const cameraPresetRef = useRef<((preset: 'front' | 'top' | 'orbit') => void) | null>(null)
@@ -60,7 +59,7 @@ export function Layout() {
       }
 
       // Ctrl+V — paste (enter ghost mode)
-      if (e.ctrlKey && e.key === 'v' && state.clipboard.length > 0) {
+      if (e.ctrlKey && e.key === 'v' && state.clipboard.length > 0 && !state.ghostMode) {
         e.preventDefault()
         const ghosts: GhostCabinet[] = state.clipboard.map((snap) => ({
           position: [snap.offsetX, snap.position.y, 0] as [number, number, number],
@@ -87,22 +86,41 @@ export function Layout() {
         state.selectAll()
       }
 
-      // Ctrl+D — duplicate (single selection only)
-      if (e.ctrlKey && e.key === 'd' && state.selectedIds.size > 0) {
+      // Ctrl+D — duplicate (enter ghost mode)
+      if (e.ctrlKey && e.key === 'd' && state.selectedIds.size > 0 && !state.ghostMode) {
         e.preventDefault()
-        const cab = state.cabinets[Array.from(state.selectedIds)[0]]
-        if (!cab) return
-        const { id: _, ...cabData } = cab
-        const x = findPlacementPosition(
-          cabData.type, cabData.width, cabData.height, cabData.depth,
-          state.wall, Object.values(state.cabinets)
-        )
-        if (x !== null) {
-          state.addCabinet({
-            ...cabData,
-            position: { x, y: getYPosition(cabData.type) },
-          })
-        }
+
+        const selected = Array.from(state.selectedIds)
+          .map((id) => state.cabinets[id])
+          .filter(Boolean)
+        if (selected.length === 0) return
+
+        const centroidX =
+          selected.reduce((sum, c) => sum + c.position.x + c.width / 2, 0) /
+          selected.length
+
+        const ghosts: GhostCabinet[] = selected.map((c) => {
+          const { id: _, ...rest } = c
+          const snapshot: CabinetSnapshot = { ...rest, offsetX: c.position.x - centroidX }
+          return {
+            position: [c.position.x - centroidX, c.position.y, 0] as [number, number, number],
+            width: c.width,
+            height: c.height,
+            depth: c.depth,
+            type: c.type,
+            style: c.style,
+            color: c.faceColor,
+            offsetX: c.position.x - centroidX,
+            snapshot,
+          }
+        })
+
+        state.setGhostMode({
+          type: 'duplicate',
+          ghosts,
+          anchorWorldX: 0,
+          isColliding: false,
+        })
       }
     }
 
