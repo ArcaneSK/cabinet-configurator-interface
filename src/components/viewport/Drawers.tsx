@@ -24,7 +24,7 @@ export function Drawers({ drawerCount, width, drawerZoneTop, drawerZoneBottom, d
 
   const drawers = []
   for (let i = 0; i < drawerCount; i++) {
-    const y = drawerZoneTop - REVEAL - (i + 0.5) * (drawerH + REVEAL)
+    const y = drawerZoneTop - REVEAL - drawerH / 2 - i * (drawerH + REVEAL)
     drawers.push(
       <group key={i}>
         <mesh position={[width / 2, y, drawerZ]} castShadow>
