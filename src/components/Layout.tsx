@@ -3,6 +3,7 @@ import { useStore, useTemporalStore } from '../store/useStore'
 import { Sidebar } from './sidebar/Sidebar'
 import { Toolbar } from './toolbar/Toolbar'
 import { SceneCanvas } from './viewport/SceneCanvas'
+import { ghostAnchorX } from './viewport/GhostOverlay'
 import { MarqueeOverlay } from './viewport/MarqueeOverlay'
 import * as THREE from 'three'
 import type { GhostCabinet, CabinetSnapshot, CabinetType, CabinetStyle } from '../types'
@@ -150,14 +151,14 @@ export function Layout() {
       if (e.clientX >= rect.left && e.clientX <= rect.right &&
           e.clientY >= rect.top && e.clientY <= rect.bottom) {
         ghostStarted = true
-        const y = getYPosition(dragConfig.type as CabinetType)
+        const y = getYPosition(dragConfig.type)
         const ghost: GhostCabinet = {
           position: [0, y, 0],
           width: dragConfig.width,
           height: dragConfig.height,
           depth: dragConfig.depth,
-          type: dragConfig.type as CabinetType,
-          style: dragConfig.style as CabinetStyle,
+          type: dragConfig.type,
+          style: dragConfig.style,
           color: dragConfig.faceColor,
           offsetX: -dragConfig.width / 2, // center on cursor
         }
@@ -190,7 +191,7 @@ export function Layout() {
               isCustomSize: false,
               faceColor: g.color,
               boxColor: 'white',
-              position: { x: g.position[0], y: g.position[1] },
+              position: { x: ghostAnchorX.current + g.offsetX, y: g.position[1] },
               appliedEndLeft: null,
               appliedEndRight: null,
               handleSide: 'left',
@@ -204,10 +205,12 @@ export function Layout() {
     window.addEventListener('sidebar-drag-start', onDragStart)
     window.addEventListener('pointermove', onPointerMove)
     window.addEventListener('pointerup', onPointerUp)
+    window.addEventListener('pointercancel', onPointerUp)
     return () => {
       window.removeEventListener('sidebar-drag-start', onDragStart)
       window.removeEventListener('pointermove', onPointerMove)
       window.removeEventListener('pointerup', onPointerUp)
+      window.removeEventListener('pointercancel', onPointerUp)
     }
   }, [])
 

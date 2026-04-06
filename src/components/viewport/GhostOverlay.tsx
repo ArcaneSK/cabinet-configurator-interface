@@ -6,6 +6,9 @@ import { useStore } from '../../store/useStore'
 import { checkCollision } from '../../systems/collision'
 import { GhostCabinetMesh } from './GhostCabinetMesh'
 
+// Module-level ref for live anchor X — readable by Layout for sidebar-drag placement
+export const ghostAnchorX = { current: 0 }
+
 export function GhostOverlay() {
   const ghostMode = useStore((s) => s.ghostMode)
   const { camera, gl } = useThree()
@@ -80,6 +83,7 @@ export function GhostOverlay() {
     // Update refs
     ghostPositions.current = positions
     anchorX.current = ax
+    ghostAnchorX.current = ax
     const collidingChanged = isColliding.current !== colliding
     isColliding.current = colliding
     needsUpdate.current = true
@@ -133,7 +137,7 @@ export function GhostOverlay() {
           position: { x: pos[0], y: pos[1] },
         })
       } else {
-        // Sidebar drag: create new cabinet with defaults
+        // Fallback for ghosts without snapshot: create cabinet with defaults
         state.addCabinet({
           type: g.type,
           style: g.style,
