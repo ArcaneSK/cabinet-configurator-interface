@@ -26,6 +26,8 @@ export function Layout() {
     cameraRef.current = cam
   }, [])
 
+  const ghostMode = useStore((s) => s.ghostMode)
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const state = useStore.getState()
@@ -227,7 +229,11 @@ export function Layout() {
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <Toolbar onCameraPreset={handleCameraPreset} />
-        <div ref={canvasContainerRef} style={{ flex: 1, position: 'relative' }}>
+        <div
+          ref={canvasContainerRef}
+          className={`canvas-container${ghostMode ? ' ghost-active' : ''}`}
+          style={{ flex: 1, position: 'relative' }}
+        >
           <SceneCanvas
             onCameraPresetReady={handleCameraPresetReady}
             onCameraRef={handleCameraRef}
@@ -242,7 +248,7 @@ export function Layout() {
             fontSize: 11,
             pointerEvents: 'none',
           }}>
-            Click to select · Drag to move · Scroll to zoom
+            Left-click: select · Right-drag: orbit · Shift+Right-drag: pan · Scroll: zoom
           </div>
         </div>
       </div>

@@ -360,3 +360,8 @@ input[type="checkbox"] {
 .segment-btn:hover:not(.active) {
   background: var(--bg-secondary);
 }
+
+.canvas-container.ghost-active,
+.canvas-container.ghost-active canvas {
+  cursor: copy !important;
+}
