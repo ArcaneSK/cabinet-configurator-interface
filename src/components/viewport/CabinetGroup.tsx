@@ -9,6 +9,8 @@ import { CabinetBox } from './CabinetBox'
 import { Doors } from './Doors'
 import { Drawers } from './Drawers'
 import { DragHandler } from './DragHandler'
+import { ArrowHandles } from './ArrowHandles'
+import { TranslateGizmo } from './TranslateGizmo'
 
 const T = 0.75
 const DRAWER_HEIGHT = 6
@@ -23,6 +25,7 @@ export function CabinetGroup({ data }: CabinetGroupProps) {
   const setSelected = useStore((s) => s.setSelected)
   const toggleSelected = useStore((s) => s.toggleSelected)
   const isSelected = selectedIds.has(data.id)
+  const gizmoStyle = useStore((s) => s.gizmoStyle)
   const [isHovered, setIsHovered] = useState(false)
 
   const style = getStyle(data.style)
@@ -140,6 +143,14 @@ export function CabinetGroup({ data }: CabinetGroupProps) {
           />
         </mesh>
       )}
+
+      {isSelected && gizmoStyle === 'arrows' && (
+        <ArrowHandles width={width} height={height} depth={depth} />
+      )}
+      {isSelected && gizmoStyle === 'translate' && (
+        <TranslateGizmo width={width} height={height} depth={depth} />
+      )}
+      {/* 'boundingBox' style: no extra widget — just the selection highlight */}
     </group>
   )
 }
