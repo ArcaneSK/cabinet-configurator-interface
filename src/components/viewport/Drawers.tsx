@@ -31,7 +31,7 @@ export function Drawers({ drawerCount, width, drawerZoneTop, drawerZoneBottom, d
           <boxGeometry args={[openingW, drawerH, T]} />
           <CabinetMaterial finish={finish} />
         </mesh>
-        <Handle position={[width / 2, y, depth + T]} />
+        <Handle position={[width / 2, y, depth + T]} rotation={[0, 0, Math.PI / 2]} />
       </group>
     )
   }

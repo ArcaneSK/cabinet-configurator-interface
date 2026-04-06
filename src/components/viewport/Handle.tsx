@@ -11,20 +11,20 @@ interface HandleProps {
 export function Handle({ position, rotation = [0, 0, 0] }: HandleProps) {
   return (
     <group position={position} rotation={rotation}>
-      {/* Bar */}
-      <mesh rotation={[0, 0, Math.PI / 2]} position={[0, 0, POST_HEIGHT]}>
+      {/* Bar — vertical (cylinder default axis is Y) */}
+      <mesh position={[0, 0, POST_HEIGHT]}>
         <cylinderGeometry args={[BAR_RADIUS, BAR_RADIUS, BAR_LENGTH, 8]} />
         <meshStandardMaterial color="#888" metalness={0.8} roughness={0.5} />
       </mesh>
 
-      {/* Left post */}
-      <mesh position={[-BAR_LENGTH / 2 + 1, 0, POST_HEIGHT / 2]}>
+      {/* Top post — extends along Z from door face to bar */}
+      <mesh position={[0, BAR_LENGTH / 2 - 1, POST_HEIGHT / 2]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[POST_RADIUS, POST_RADIUS, POST_HEIGHT, 8]} />
         <meshStandardMaterial color="#888" metalness={0.8} roughness={0.5} />
       </mesh>
 
-      {/* Right post */}
-      <mesh position={[BAR_LENGTH / 2 - 1, 0, POST_HEIGHT / 2]}>
+      {/* Bottom post */}
+      <mesh position={[0, -BAR_LENGTH / 2 + 1, POST_HEIGHT / 2]} rotation={[Math.PI / 2, 0, 0]}>
         <cylinderGeometry args={[POST_RADIUS, POST_RADIUS, POST_HEIGHT, 8]} />
         <meshStandardMaterial color="#888" metalness={0.8} roughness={0.5} />
       </mesh>
