@@ -4,6 +4,7 @@ import { WallEnvironment } from './WallEnvironment'
 import { CabinetGroup } from './CabinetGroup'
 import { CountertopMesh } from './CountertopMesh'
 import { DimensionLabels } from './DimensionLabels'
+import { GhostOverlay } from './GhostOverlay'
 import { useStore } from '../../store/useStore'
 import { useRef, useEffect, useCallback } from 'react'
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib'
@@ -133,6 +134,7 @@ export function SceneCanvas({ onCameraPresetReady, onCameraRef }: SceneCanvasPro
       ))}
 
       <DimensionLabels />
+      <GhostOverlay />
     </Canvas>
   )
 }
