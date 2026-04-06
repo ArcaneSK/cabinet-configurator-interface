@@ -7,6 +7,30 @@ import { DimensionLabels } from './DimensionLabels'
 import { useStore } from '../../store/useStore'
 import { useRef, useEffect, useCallback } from 'react'
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib'
+import * as THREE from 'three'
+
+function CameraControlsManager({ controlsRef }: { controlsRef: React.RefObject<OrbitControlsType | null> }) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Shift' && controlsRef.current) {
+        controlsRef.current.mouseButtons.RIGHT = THREE.MOUSE.PAN
+      }
+    }
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Shift' && controlsRef.current) {
+        controlsRef.current.mouseButtons.RIGHT = THREE.MOUSE.ROTATE
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
+  }, [controlsRef])
+
+  return null
+}
 
 function CameraPresetHandler({ controlsRef, onReady }: {
   controlsRef: React.RefObject<OrbitControlsType | null>
@@ -60,6 +84,7 @@ export function SceneCanvas({ onCameraPresetReady }: SceneCanvasProps) {
       camera={{ position: [96, 54, 120], fov: 45, near: 0.1, far: 2000 }}
       style={{ background: 'linear-gradient(180deg, #2a2a3e 0%, #1a1a2e 100%)' }}
       shadows
+      onContextMenu={(e) => e.preventDefault()}
     >
       <ambientLight intensity={0.4} />
       <directionalLight
@@ -77,8 +102,14 @@ export function SceneCanvas({ onCameraPresetReady }: SceneCanvasProps) {
         dampingFactor={0.1}
         minDistance={20}
         maxDistance={400}
+        mouseButtons={{
+          LEFT: undefined as unknown as THREE.MOUSE,
+          MIDDLE: undefined as unknown as THREE.MOUSE,
+          RIGHT: THREE.MOUSE.ROTATE,
+        }}
       />
       <CameraPresetHandler controlsRef={controlsRef} onReady={handleReady} />
+      <CameraControlsManager controlsRef={controlsRef} />
       <WallEnvironment />
 
       {Object.values(cabinets).map((cab) => (
