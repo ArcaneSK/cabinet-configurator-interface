@@ -2,6 +2,8 @@
 
 A 3D garage cabinet configurator built with React and Three.js. Design custom cabinet layouts by dragging and dropping cabinets onto a virtual wall, adjusting sizes, styles, and finishes in real time.
 
+![Cabinet Configurator Interface](screenshot.png)
+
 ## Features
 
 - **3D Viewport** &mdash; Interactive scene with orbit, pan, and zoom controls
