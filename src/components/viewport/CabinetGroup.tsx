@@ -32,31 +32,30 @@ export function CabinetGroup({ data }: CabinetGroupProps) {
   const style = getStyle(data.style)
   const { width, height, depth } = data
 
-  // Compute door/drawer zones
-  const interiorBottom = T
-  const interiorTop = height - T
-  let drawerZoneTop = interiorTop
-  let drawerZoneBottom = interiorTop
-  let doorZoneTop = interiorTop
-  let doorZoneBottom = interiorBottom
+  // Compute door/drawer zones — full overlay: zones span full cabinet height
+  // so faces cover the top/bottom panels. Each component applies REVEAL at edges.
+  let drawerZoneTop = height
+  let drawerZoneBottom = height
+  let doorZoneTop = height
+  let doorZoneBottom = 0
 
   if (style.drawers > 0 && style.doors > 0) {
     const drawerZoneH = style.drawers * DRAWER_HEIGHT
-    drawerZoneTop = interiorTop
-    drawerZoneBottom = interiorTop - drawerZoneH
+    drawerZoneTop = height
+    drawerZoneBottom = height - drawerZoneH
     doorZoneTop = drawerZoneBottom
-    doorZoneBottom = interiorBottom
+    doorZoneBottom = 0
   } else if (style.drawers > 0 && style.doors === 0) {
-    drawerZoneTop = interiorTop
-    drawerZoneBottom = interiorBottom
+    drawerZoneTop = height
+    drawerZoneBottom = 0
   } else {
-    doorZoneTop = interiorTop
-    doorZoneBottom = interiorBottom
+    doorZoneTop = height
+    doorZoneBottom = 0
   }
 
   const shelfY = style.drawers > 0 && style.doors > 0
     ? drawerZoneBottom
-    : (interiorTop + interiorBottom) / 2
+    : height / 2
 
   const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
