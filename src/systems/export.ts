@@ -22,8 +22,9 @@ interface ExportCabinet {
   isCustomSize: boolean
   faceColor: string
   boxColor: string
-  appliedEnds: { left: string | null; right: string | null }
+  appliedEnds: { left: string | null; right: string | null; bottom: string | null }
   handleSide: CabinetData['handleSide']
+  toeKick: number
   position: { x: number; y: number }
 }
 
@@ -56,8 +57,9 @@ export function generateExport(
       isCustomSize: c.isCustomSize,
       faceColor: c.faceColor,
       boxColor: c.boxColor,
-      appliedEnds: { left: c.appliedEndLeft, right: c.appliedEndRight },
+      appliedEnds: { left: c.appliedEndLeft, right: c.appliedEndRight, bottom: c.appliedEndBottom },
       handleSide: c.handleSide,
+      toeKick: c.toeKick,
       position: c.position,
     })),
     ...countertopList.map((ct): ExportCountertop => ({

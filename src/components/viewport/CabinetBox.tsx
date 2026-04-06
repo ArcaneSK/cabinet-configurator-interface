@@ -10,9 +10,10 @@ interface CabinetBoxProps {
   depth: number
   boxColor: string
   shelfY?: number
+  toeKick?: number
 }
 
-export function CabinetBox({ width, height, depth, boxColor, shelfY }: CabinetBoxProps) {
+export function CabinetBox({ width, height, depth, boxColor, shelfY, toeKick = 0 }: CabinetBoxProps) {
   const finish = getFinish(boxColor)
   const innerW = width - 2 * T
   const innerD = depth - T
@@ -62,6 +63,8 @@ export function CabinetBox({ width, height, depth, boxColor, shelfY }: CabinetBo
         <meshBasicMaterial visible={false} />
         <Edges threshold={15} color="#999" />
       </mesh>
+
+      {/* Toe kick is open — cabinet floats at position.y with no geometry below */}
     </group>
   )
 }

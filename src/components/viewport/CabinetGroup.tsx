@@ -39,7 +39,14 @@ export function CabinetGroup({ data }: CabinetGroupProps) {
   let doorZoneTop = height
   let doorZoneBottom = 0
 
-  if (style.drawers > 0 && style.doors > 0) {
+  if (data.style === 'combo') {
+    // Combo pantry: top half = doors, bottom half = drawers, divided at midpoint
+    const midpoint = height / 2
+    doorZoneTop = height
+    doorZoneBottom = midpoint
+    drawerZoneTop = midpoint
+    drawerZoneBottom = 0
+  } else if (style.drawers > 0 && style.doors > 0) {
     const drawerZoneH = style.drawers * DRAWER_HEIGHT
     drawerZoneTop = height
     drawerZoneBottom = height - drawerZoneH
@@ -53,9 +60,11 @@ export function CabinetGroup({ data }: CabinetGroupProps) {
     doorZoneBottom = 0
   }
 
-  const shelfY = style.drawers > 0 && style.doors > 0
-    ? drawerZoneBottom
-    : height / 2
+  const shelfY = data.style === 'combo'
+    ? height / 2
+    : style.drawers > 0 && style.doors > 0
+      ? drawerZoneBottom
+      : height / 2
 
   const handleClick = useCallback((e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation()
@@ -80,6 +89,7 @@ export function CabinetGroup({ data }: CabinetGroupProps) {
         depth={depth}
         boxColor={data.boxColor}
         shelfY={shelfY}
+        toeKick={data.toeKick}
       />
 
       {style.doors > 0 && (
@@ -108,10 +118,11 @@ export function CabinetGroup({ data }: CabinetGroupProps) {
       {/* Applied ends */}
       {data.appliedEndLeft && (() => {
         const endFinish = getFinish(data.appliedEndLeft)
+        const endDepth = depth + T
         return (
           <group position={[-(T / 2 + 0.01), 0, 0]}>
-            <mesh position={[0, height / 2, depth / 2]} castShadow>
-              <boxGeometry args={[T, height, depth]} />
+            <mesh position={[0, height / 2, endDepth / 2]} castShadow>
+              <boxGeometry args={[T, height, endDepth]} />
               <CabinetMaterial finish={endFinish} />
             </mesh>
           </group>
@@ -119,13 +130,24 @@ export function CabinetGroup({ data }: CabinetGroupProps) {
       })()}
       {data.appliedEndRight && (() => {
         const endFinish = getFinish(data.appliedEndRight)
+        const endDepth = depth + T
         return (
           <group position={[width + T / 2 + 0.01, 0, 0]}>
-            <mesh position={[0, height / 2, depth / 2]} castShadow>
-              <boxGeometry args={[T, height, depth]} />
+            <mesh position={[0, height / 2, endDepth / 2]} castShadow>
+              <boxGeometry args={[T, height, endDepth]} />
               <CabinetMaterial finish={endFinish} />
             </mesh>
           </group>
+        )
+      })()}
+      {/* Applied end bottom (uppers only) */}
+      {data.appliedEndBottom && (() => {
+        const endFinish = getFinish(data.appliedEndBottom)
+        return (
+          <mesh position={[width / 2, -(T / 2 + 0.01), (depth + T) / 2]} castShadow>
+            <boxGeometry args={[width, T, depth + T]} />
+            <CabinetMaterial finish={endFinish} />
+          </mesh>
         )
       })()}
 
@@ -136,7 +158,7 @@ export function CabinetGroup({ data }: CabinetGroupProps) {
         <mesh position={[width / 2, height / 2, depth / 2]}>
           <boxGeometry args={[width + 0.5, height + 0.5, depth + 0.5]} />
           <meshBasicMaterial
-            color={isSelected ? '#e94560' : '#4488ff'}
+            color={isSelected ? '#fbcf20' : '#4488ff'}
             transparent
             opacity={isSelected ? 0.15 : 0.08}
             depthWrite={false}
@@ -145,10 +167,10 @@ export function CabinetGroup({ data }: CabinetGroupProps) {
       )}
 
       {isSelected && gizmoStyle === 'arrows' && (
-        <ArrowHandles width={width} height={height} depth={depth} />
+        <ArrowHandles width={width} height={height} depth={depth} showVertical={data.type === 'upper'} />
       )}
       {isSelected && gizmoStyle === 'translate' && (
-        <TranslateGizmo width={width} height={height} depth={depth} />
+        <TranslateGizmo width={width} height={height} depth={depth} showVertical={data.type === 'upper'} />
       )}
       {/* 'boundingBox' style: no extra widget — just the selection highlight */}
     </group>

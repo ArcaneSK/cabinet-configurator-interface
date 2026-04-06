@@ -131,7 +131,7 @@ export const useStore = create<AppState>()(
             length: totalWidth + 1,
             depth: 25,
             color: 'black',
-            overhang: { front: 1, sides: 0.5 },
+            overhang: { front: 0.75, sides: 0.75 },
           }
           return { countertops: { ...state.countertops, [id]: ct } }
         })

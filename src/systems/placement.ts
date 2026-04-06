@@ -2,12 +2,13 @@ import type { CabinetData, CabinetType, WallConfig } from '../types'
 import { checkCollision } from './collision'
 
 const Y_POSITIONS: Record<CabinetType, number> = {
-  base: 0,
+  base: 6,   // default toe kick
   upper: 54,
-  pantry: 0,
+  pantry: 6, // default toe kick
 }
 
-export function getYPosition(type: CabinetType): number {
+export function getYPosition(type: CabinetType, toeKick?: number): number {
+  if (toeKick !== undefined && type !== 'upper') return toeKick
   return Y_POSITIONS[type]
 }
 

@@ -2,11 +2,55 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cabinet Configurator</title>
+    <title>Cabinet Configurator Interface</title>
   </head>
   <body>
+    <div id="loading-spinner" style="position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;background:#051732;">
+      <svg width="72" height="80" viewBox="0 0 72 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <style>
+          @keyframes draw-box{
+            0%{stroke-dashoffset:304}
+            30%{stroke-dashoffset:0}
+            50%{stroke-dashoffset:0}
+            80%{stroke-dashoffset:-304}
+            100%{stroke-dashoffset:-304}
+          }
+          @keyframes draw-left{
+            0%,20%{stroke-dashoffset:192}
+            45%{stroke-dashoffset:0}
+            55%{stroke-dashoffset:0}
+            80%{stroke-dashoffset:-192}
+            100%{stroke-dashoffset:-192}
+          }
+          @keyframes draw-right{
+            0%,25%{stroke-dashoffset:192}
+            50%{stroke-dashoffset:0}
+            58%{stroke-dashoffset:0}
+            83%{stroke-dashoffset:-192}
+            100%{stroke-dashoffset:-192}
+          }
+          @keyframes handle{
+            0%,40%{opacity:0}
+            50%{opacity:1}
+            60%{opacity:1}
+            75%{opacity:0}
+            100%{opacity:0}
+          }
+          .ld-box{stroke-dasharray:304;animation:draw-box 2.8s ease-in-out infinite}
+          .ld-left{stroke-dasharray:192;animation:draw-left 2.8s ease-in-out infinite}
+          .ld-right{stroke-dasharray:192;animation:draw-right 2.8s ease-in-out infinite}
+          .ld-handle{opacity:0;animation:handle 2.8s ease-in-out infinite}
+        </style>
+        <rect class="ld-box" x="2" y="2" width="68" height="76" rx="3" stroke="#697888" stroke-width="1.5"/>
+        <rect class="ld-left" x="6" y="6" width="28" height="68" rx="2" stroke="#697888" stroke-width="1.2"/>
+        <rect class="ld-right" x="38" y="6" width="28" height="68" rx="2" stroke="#697888" stroke-width="1.2"/>
+        <circle class="ld-handle" cx="30" cy="40" r="2" fill="#697888"/>
+        <circle class="ld-handle" cx="42" cy="40" r="2" fill="#697888"/>
+      </svg>
+      <div style="color:#697888;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;letter-spacing:1px;">LOADING</div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

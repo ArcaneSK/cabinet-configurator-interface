@@ -8,6 +8,7 @@ export const cabinetStyles: StyleDefinition[] = [
   { id: '1dw2dr', label: '1 Drawer + 2 Door', doors: 2, drawers: 1, allowedTypes: ['base'] },
   { id: '3dw', label: '3 Drawer', doors: 0, drawers: 3, allowedTypes: ['base'] },
   { id: '4dw', label: '4 Drawer', doors: 0, drawers: 4, allowedTypes: ['base'] },
+  { id: 'combo', label: 'Combo Pantry', doors: 2, drawers: 3, allowedTypes: ['pantry'] },
 ]
 
 export function getStylesForType(type: CabinetType): StyleDefinition[] {

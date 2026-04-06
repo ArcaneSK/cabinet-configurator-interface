@@ -169,8 +169,8 @@ export function MarqueeOverlay({ canvasContainerRef, camera }: MarqueeOverlayPro
         top: rect.top,
         width: rect.width,
         height: rect.height,
-        border: '1px solid #4488ff',
-        background: 'rgba(68, 136, 255, 0.1)',
+        border: '1px solid #fbcf20',
+        background: 'rgba(251, 207, 32, 0.1)',
         pointerEvents: 'none',
         zIndex: 1000,
       }}

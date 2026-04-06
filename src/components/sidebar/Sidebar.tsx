@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { WallSetup } from './WallSetup'
 import { CabinetCatalog } from './CabinetCatalog'
 import { CabinetProperties } from './CabinetProperties'
+import { PresetPanel } from './PresetPanel'
 import { CountertopPanel } from './CountertopPanel'
 import { SettingsPanel } from './SettingsPanel'
 import { useStore } from '../../store/useStore'
@@ -34,6 +35,9 @@ export function Sidebar() {
     <div className="sidebar">
       <Section title="Wall Setup" badge={`${Math.round(wall.width / 12)}' \u00D7 ${Math.round(wall.height / 12)}'`}>
         <WallSetup />
+      </Section>
+      <Section title="Presets" defaultOpen={false}>
+        <PresetPanel />
       </Section>
       <Section title="Add Cabinet">
         <CabinetCatalog />

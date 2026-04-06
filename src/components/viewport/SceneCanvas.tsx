@@ -41,7 +41,7 @@ function CameraControlsManager({ controlsRef }: { controlsRef: React.RefObject<O
 
 function CameraPresetHandler({ controlsRef, onReady }: {
   controlsRef: React.RefObject<OrbitControlsType | null>
-  onReady: (fn: (preset: 'front' | 'top' | 'orbit') => void) => void
+  onReady: (fn: (preset: 'front' | 'top' | 'orbit' | 'recenter') => void) => void
 }) {
   const { camera } = useThree()
   const wall = useStore((s) => s.wall)
@@ -49,7 +49,7 @@ function CameraPresetHandler({ controlsRef, onReady }: {
   useEffect(() => {
     const cx = wall.width / 2
     const cy = wall.height / 2
-    onReady((preset: 'front' | 'top' | 'orbit') => {
+    onReady((preset: 'front' | 'top' | 'orbit' | 'recenter') => {
       const controls = controlsRef.current
       if (!controls) return
       switch (preset) {
@@ -65,6 +65,29 @@ function CameraPresetHandler({ controlsRef, onReady }: {
           camera.position.set(cx, cy, 120)
           controls.target.set(cx, 40, 0)
           break
+        case 'recenter': {
+          const cabs = Object.values(useStore.getState().cabinets)
+          if (cabs.length === 0) {
+            // No cabinets — fall back to wall center
+            camera.position.set(cx, cy, 150)
+            controls.target.set(cx, cy, 0)
+          } else {
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+            for (const c of cabs) {
+              minX = Math.min(minX, c.position.x)
+              maxX = Math.max(maxX, c.position.x + c.width)
+              minY = Math.min(minY, c.position.y)
+              maxY = Math.max(maxY, c.position.y + c.height)
+            }
+            const centerX = (minX + maxX) / 2
+            const centerY = (minY + maxY) / 2
+            const span = Math.max(maxX - minX, maxY - minY)
+            const dist = span * 1.4 + 30
+            camera.position.set(centerX, centerY, dist)
+            controls.target.set(centerX, centerY, 0)
+          }
+          break
+        }
       }
       controls.update()
     })
@@ -74,7 +97,7 @@ function CameraPresetHandler({ controlsRef, onReady }: {
 }
 
 interface SceneCanvasProps {
-  onCameraPresetReady?: (fn: (preset: 'front' | 'top' | 'orbit') => void) => void
+  onCameraPresetReady?: (fn: (preset: 'front' | 'top' | 'orbit' | 'recenter') => void) => void
   onCameraRef?: (camera: THREE.Camera) => void
 }
 
@@ -83,7 +106,7 @@ export function SceneCanvas({ onCameraPresetReady, onCameraRef }: SceneCanvasPro
   const cabinets = useStore((s) => s.cabinets)
   const countertops = useStore((s) => s.countertops)
 
-  const handleReady = useCallback((fn: (preset: 'front' | 'top' | 'orbit') => void) => {
+  const handleReady = useCallback((fn: (preset: 'front' | 'top' | 'orbit' | 'recenter') => void) => {
     onCameraPresetReady?.(fn)
   }, [onCameraPresetReady])
 
@@ -93,8 +116,8 @@ export function SceneCanvas({ onCameraPresetReady, onCameraRef }: SceneCanvasPro
 
   return (
     <Canvas
-      camera={{ position: [96, 54, 120], fov: 45, near: 0.1, far: 2000 }}
-      style={{ background: 'linear-gradient(180deg, #2a2a3e 0%, #1a1a2e 100%)' }}
+      camera={{ position: [96, 54, 180], fov: 45, near: 0.1, far: 2000 }}
+      style={{ background: 'linear-gradient(180deg, #0a2240 0%, #051732 100%)' }}
       shadows
       onContextMenu={(e) => e.preventDefault()}
     >

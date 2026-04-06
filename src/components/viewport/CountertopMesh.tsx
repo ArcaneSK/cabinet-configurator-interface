@@ -2,6 +2,7 @@ import type { CountertopData, CabinetData } from '../../types'
 import { getFinish } from '../../catalog/finishes'
 
 const T = 0.75
+const ADJACENCY_TOLERANCE = 1 // within 1" counts as adjacent
 
 interface CountertopMeshProps {
   data: CountertopData
@@ -17,14 +18,32 @@ export function CountertopMesh({ data, cabinets }: CountertopMeshProps) {
   if (sortedCabinets.length === 0) return null
 
   const leftmost = sortedCabinets[0]
-  const baseHeight = leftmost.height
-  const x = leftmost.position.x - data.overhang.sides
-  const y = baseHeight
-  const z = -data.overhang.front
+  const rightmost = sortedCabinets[sortedCabinets.length - 1]
+  const leftEdge = leftmost.position.x
+  const rightEdge = rightmost.position.x + rightmost.width
+
+  // Check if a pantry is adjacent on either side
+  const allCabinets = Object.values(cabinets)
+  const pantryOnLeft = allCabinets.some(c =>
+    c.type === 'pantry' &&
+    Math.abs(c.position.x + c.width - leftEdge) < ADJACENCY_TOLERANCE
+  )
+  const pantryOnRight = allCabinets.some(c =>
+    c.type === 'pantry' &&
+    Math.abs(c.position.x - rightEdge) < ADJACENCY_TOLERANCE
+  )
+
+  const overhangLeft = pantryOnLeft ? 0 : data.overhang.sides
+  const overhangRight = pantryOnRight ? 0 : data.overhang.sides
+
+  const cabinetDepth = leftmost.depth
+  const x = leftEdge - overhangLeft
+  const y = leftmost.position.y + leftmost.height
+  const z = 0 // flush to wall
 
   const totalCabinetWidth = sortedCabinets.reduce((sum, c) => sum + c.width, 0)
-  const ctWidth = totalCabinetWidth + 2 * data.overhang.sides
-  const ctDepth = data.depth
+  const ctWidth = totalCabinetWidth + overhangLeft + overhangRight
+  const ctDepth = cabinetDepth + data.overhang.front // flush back + overhang front
 
   return (
     <mesh position={[x + ctWidth / 2, y + T / 2, z + ctDepth / 2]} castShadow>

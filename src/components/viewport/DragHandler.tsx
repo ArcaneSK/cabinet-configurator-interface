@@ -1,4 +1,4 @@
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, useEffect } from 'react'
 import { useThree } from '@react-three/fiber'
 import type { ThreeEvent } from '@react-three/fiber'
 import * as THREE from 'three'
@@ -22,7 +22,7 @@ interface DragHandlerProps {
 export function DragHandler({ cabinetId, width, height, depth }: DragHandlerProps) {
   const isDragging = useRef(false)
   const dragStarted = useRef(false)
-  const dragOffset = useRef(0)
+  const dragOffset = useRef({ x: 0, y: 0 })
   const startPointerPos = useRef({ x: 0, y: 0 })
   const { camera, gl } = useThree()
 
@@ -62,7 +62,10 @@ export function DragHandler({ cabinetId, width, height, depth }: DragHandlerProp
     startPointerPos.current = { x: e.nativeEvent.clientX, y: e.nativeEvent.clientY }
 
     const intersection = raycastToPlane(e.nativeEvent.offsetX, e.nativeEvent.offsetY)
-    dragOffset.current = intersection.x - cab.position.x
+    dragOffset.current = {
+      x: intersection.x - cab.position.x,
+      y: intersection.y - cab.position.y,
+    }
 
     gl.domElement.setPointerCapture(e.nativeEvent.pointerId)
   }, [cabinetId, gl, raycastToPlane])
@@ -83,13 +86,22 @@ export function DragHandler({ cabinetId, width, height, depth }: DragHandlerProp
     const cab = state.cabinets[cabinetId]
     if (!cab) return
 
-    let newX = intersection.x - dragOffset.current
+    let newX = intersection.x - dragOffset.current.x
+    let newY = intersection.y - dragOffset.current.y
     const allCabinets = Object.values(state.cabinets)
 
     // Get selected cabinets
     const selectedCabs = Array.from(state.selectedIds)
       .map((id) => state.cabinets[id])
       .filter(Boolean)
+
+    // Only allow vertical movement if ALL selected cabinets are uppers
+    const allUppers = selectedCabs.every(c => c.type === 'upper')
+    if (!allUppers || cab.type !== 'upper') {
+      newY = cab.position.y
+    } else {
+      newY = Math.max(0, Math.min(newY, state.wall.height - cab.height))
+    }
 
     if (selectedCabs.length <= 1) {
       // Single cabinet drag
@@ -98,47 +110,59 @@ export function DragHandler({ cabinetId, width, height, depth }: DragHandlerProp
       newX = clampToWall(newX, width, state.wall.width)
 
       const collides = checkCollision(
-        { x: newX, width, type: cab.type, height: cab.height, y: cab.position.y },
+        { x: newX, width, type: cab.type, height: cab.height, y: newY },
         allCabinets,
         cabinetId
       )
       if (!collides) {
-        state.updateCabinet(cabinetId, { position: { x: newX, y: cab.position.y } })
+        state.updateCabinet(cabinetId, { position: { x: newX, y: newY } })
       }
     } else {
       // Group drag
-      const rawDelta = newX - cab.position.x
+      const rawDeltaX = newX - cab.position.x
+      const rawDeltaY = newY - cab.position.y
 
-      // Clamp group to wall
+      // Clamp group to wall (X)
       let groupLeft = Infinity, groupRight = -Infinity
       for (const sc of selectedCabs) {
-        groupLeft = Math.min(groupLeft, sc.position.x + rawDelta)
-        groupRight = Math.max(groupRight, sc.position.x + rawDelta + sc.width)
+        groupLeft = Math.min(groupLeft, sc.position.x + rawDeltaX)
+        groupRight = Math.max(groupRight, sc.position.x + rawDeltaX + sc.width)
       }
-      let clampedDelta = rawDelta
-      if (groupLeft < 0) clampedDelta = rawDelta - groupLeft
-      if (groupRight > state.wall.width) clampedDelta = rawDelta - (groupRight - state.wall.width)
+      let clampedDeltaX = rawDeltaX
+      if (groupLeft < 0) clampedDeltaX = rawDeltaX - groupLeft
+      if (groupRight > state.wall.width) clampedDeltaX = rawDeltaX - (groupRight - state.wall.width)
 
-      // Apply snap to the dragged cabinet
-      let snappedX = cab.position.x + clampedDelta
+      // Clamp group to wall (Y)
+      let groupBottom = Infinity, groupTop = -Infinity
+      for (const sc of selectedCabs) {
+        groupBottom = Math.min(groupBottom, sc.position.y + rawDeltaY)
+        groupTop = Math.max(groupTop, sc.position.y + rawDeltaY + sc.height)
+      }
+      let clampedDeltaY = rawDeltaY
+      if (groupBottom < 0) clampedDeltaY = rawDeltaY - groupBottom
+      if (groupTop > state.wall.height) clampedDeltaY = rawDeltaY - (groupTop - state.wall.height)
+
+      // Apply snap to the dragged cabinet (X only)
+      let snappedX = cab.position.x + clampedDeltaX
       snappedX = applySnap(snappedX, width, allCabinets, cabinetId, state.snapSettings)
-      const snapDelta = snappedX - cab.position.x
+      const snapDeltaX = snappedX - cab.position.x
 
       // Re-check wall bounds after snap
       groupLeft = Infinity
       groupRight = -Infinity
       for (const sc of selectedCabs) {
-        groupLeft = Math.min(groupLeft, sc.position.x + snapDelta)
-        groupRight = Math.max(groupRight, sc.position.x + snapDelta + sc.width)
+        groupLeft = Math.min(groupLeft, sc.position.x + snapDeltaX)
+        groupRight = Math.max(groupRight, sc.position.x + snapDeltaX + sc.width)
       }
       if (groupLeft < 0 || groupRight > state.wall.width) return
 
       // Check collision per-cabinet (each with its own collision layer)
       const excludeIds = state.selectedIds
       for (const sc of selectedCabs) {
-        const movedX = sc.position.x + snapDelta
+        const movedX = sc.position.x + snapDeltaX
+        const movedY = sc.position.y + clampedDeltaY
         if (checkCollision(
-          { x: movedX, width: sc.width, type: sc.type, height: sc.height, y: sc.position.y },
+          { x: movedX, width: sc.width, type: sc.type, height: sc.height, y: movedY },
           allCabinets,
           excludeIds
         )) {
@@ -149,7 +173,7 @@ export function DragHandler({ cabinetId, width, height, depth }: DragHandlerProp
       // Batch update all positions (single undo entry)
       const updates: Record<string, Partial<CabinetData>> = {}
       for (const sc of selectedCabs) {
-        updates[sc.id] = { position: { x: sc.position.x + snapDelta, y: sc.position.y } }
+        updates[sc.id] = { position: { x: sc.position.x + snapDeltaX, y: sc.position.y + clampedDeltaY } }
       }
       state.updateCabinets(updates)
     }
@@ -161,6 +185,19 @@ export function DragHandler({ cabinetId, width, height, depth }: DragHandlerProp
     cabinetDragActive.current = false
     gl.domElement.releasePointerCapture(e.nativeEvent.pointerId)
   }, [gl])
+
+  // Safety: if pointer is released outside the mesh, reset drag state via DOM listener
+  useEffect(() => {
+    const handleGlobalPointerUp = () => {
+      if (isDragging.current) {
+        isDragging.current = false
+        dragStarted.current = false
+        cabinetDragActive.current = false
+      }
+    }
+    window.addEventListener('pointerup', handleGlobalPointerUp)
+    return () => window.removeEventListener('pointerup', handleGlobalPointerUp)
+  }, [])
 
   return (
     <mesh

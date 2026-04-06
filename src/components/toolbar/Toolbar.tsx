@@ -3,7 +3,7 @@ import { generateExport } from '../../systems/export'
 import { useCallback } from 'react'
 
 interface ToolbarProps {
-  onCameraPreset?: (preset: 'front' | 'top' | 'orbit') => void
+  onCameraPreset?: (preset: 'front' | 'top' | 'orbit' | 'recenter') => void
 }
 
 export function Toolbar({ onCameraPreset }: ToolbarProps) {
@@ -41,8 +41,8 @@ export function Toolbar({ onCameraPreset }: ToolbarProps) {
       <button className="toolbar-btn" onClick={() => onCameraPreset?.('top')}>
         Top
       </button>
-      <button className="toolbar-btn" onClick={() => onCameraPreset?.('orbit')}>
-        Orbit
+      <button className="toolbar-btn" onClick={() => onCameraPreset?.('recenter')} title="Re-center view on cabinets">
+        Re-center
       </button>
 
       <div className="toolbar-spacer" />

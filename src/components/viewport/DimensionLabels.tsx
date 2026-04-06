@@ -21,7 +21,7 @@ export function DimensionLabels() {
           position={[cab.position.x + cab.width / 2, cab.position.y + cab.height + 2, cab.depth / 2]}
           center
           style={{
-            color: '#e94560',
+            color: '#fbcf20',
             fontSize: '11px',
             fontFamily: 'monospace',
             background: 'rgba(0,0,0,0.6)',

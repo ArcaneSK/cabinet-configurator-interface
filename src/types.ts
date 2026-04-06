@@ -1,6 +1,6 @@
 export type CabinetType = 'base' | 'upper' | 'pantry'
 
-export type CabinetStyle = '1dr' | '2dr' | 'open' | '1dw1dr' | '1dw2dr' | '3dw' | '4dw'
+export type CabinetStyle = '1dr' | '2dr' | 'open' | '1dw1dr' | '1dw2dr' | '3dw' | '4dw' | 'combo'
 
 export interface CabinetData {
   id: string
@@ -15,7 +15,9 @@ export interface CabinetData {
   position: { x: number; y: number }
   appliedEndLeft: string | null
   appliedEndRight: string | null
+  appliedEndBottom: string | null
   handleSide: 'left' | 'right'
+  toeKick: number // toe kick height in inches (base and pantry only)
 }
 
 export interface CountertopData {

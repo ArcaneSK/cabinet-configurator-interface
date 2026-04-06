@@ -20,16 +20,17 @@ export function WallEnvironment() {
         <meshStandardMaterial color="#cccccc" roughness={0.95} />
       </mesh>
 
-      {/* Grid overlay on wall */}
+      {/* Grid on floor */}
       <Grid
-        position={[halfW, halfH, -0.4]}
-        args={[wall.width, wall.height]}
+        position={[halfW, -0.05, wall.width * 0.3]}
+        rotation={[0, 0, 0]}
+        args={[wall.width * 1.5, wall.width * 0.8]}
         cellSize={6}
         cellThickness={0.3}
-        cellColor="#ccc"
+        cellColor="#bbb"
         sectionSize={12}
         sectionThickness={0.6}
-        sectionColor="#aaa"
+        sectionColor="#999"
         fadeDistance={400}
         fadeStrength={1}
       />

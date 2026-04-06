@@ -147,7 +147,9 @@ export function GhostOverlay() {
           position: { x: pos[0], y: pos[1] },
           appliedEndLeft: null,
           appliedEndRight: null,
+          appliedEndBottom: null,
           handleSide: 'left',
+          toeKick: g.type === 'upper' ? 0 : 6,
         })
       }
     }

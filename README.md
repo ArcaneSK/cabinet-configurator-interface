@@ -1,54 +1,62 @@
-# React + TypeScript + Vite
+# Cabinet Configurator Interface
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A 3D garage cabinet configurator built with React and Three.js. Design custom cabinet layouts by dragging and dropping cabinets onto a virtual wall, adjusting sizes, styles, and finishes in real time.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **3D Viewport** &mdash; Interactive scene with orbit, pan, and zoom controls
+- **Cabinet Types** &mdash; Base, upper, and pantry cabinets with multiple door/drawer styles (1-door, 2-door, drawer banks, combo pantry, etc.)
+- **Drag & Drop** &mdash; Drag cabinets from the sidebar directly into the 3D workspace
+- **Preset Layouts** &mdash; Pre-configured cabinet arrangements (full garage wall, workbench station, storage towers, drawer bank, upper wall)
+- **Customization** &mdash; Adjustable width, height, and depth with preset size options
+- **Applied Ends** &mdash; Decorative end panels for left, right, and bottom sides
+- **Countertops** &mdash; Auto-generated countertops that span base cabinets with smart overhang handling
+- **Multi-Select** &mdash; Click, Shift+click, and marquee drag selection
+- **Copy/Paste/Duplicate** &mdash; Ctrl+C, Ctrl+V, Ctrl+D with ghost placement preview
+- **Undo/Redo** &mdash; Full history with Ctrl+Z / Ctrl+Y
+- **Collision Detection** &mdash; Cabinets snap to grid and prevent overlapping
+- **Export** &mdash; Export configurations as JSON
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **React 18** + TypeScript
+- **React Three Fiber** (R3F) + drei for 3D rendering
+- **Three.js** 0.176
+- **Zustand** for state management with zundo (undo/redo middleware)
+- **Vite** for development and builds
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Getting Started
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Controls
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Action | Input |
+|--------|-------|
+| Select cabinet | Left-click |
+| Multi-select | Shift+click or marquee drag |
+| Orbit camera | Right-drag |
+| Pan camera | Ctrl+Right-drag |
+| Zoom | Scroll wheel |
+| Undo / Redo | Ctrl+Z / Ctrl+Y |
+| Copy / Paste | Ctrl+C / Ctrl+V |
+| Duplicate | Ctrl+D |
+| Select all | Ctrl+A |
+| Delete selected | Delete / Backspace |
+| Cancel action | Escape |
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+## License
+
+Private

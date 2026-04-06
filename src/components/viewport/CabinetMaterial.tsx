@@ -1,9 +1,25 @@
+import { Component, type ReactNode } from 'react'
 import { useTexture } from '@react-three/drei'
 import * as THREE from 'three'
 import type { FinishOption } from '../../types'
 
 interface CabinetMaterialProps {
   finish: FinishOption
+}
+
+// Error boundary that catches texture load failures and falls back to solid color
+class TextureFallback extends Component<
+  { fallback: ReactNode; children: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false }
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+  render() {
+    if (this.state.hasError) return this.props.fallback
+    return this.props.children
+  }
 }
 
 function TexturedMaterial({ finish }: CabinetMaterialProps) {
@@ -22,7 +38,11 @@ function SolidMaterial({ finish }: CabinetMaterialProps) {
 
 export function CabinetMaterial({ finish }: CabinetMaterialProps) {
   if (finish.type === 'woodgrain' && finish.textureUrl) {
-    return <TexturedMaterial finish={finish} />
+    return (
+      <TextureFallback fallback={<SolidMaterial finish={finish} />}>
+        <TexturedMaterial finish={finish} />
+      </TextureFallback>
+    )
   }
   return <SolidMaterial finish={finish} />
 }

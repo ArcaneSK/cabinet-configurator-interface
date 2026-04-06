@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useStore, useTemporalStore } from '../store/useStore'
 import { Sidebar } from './sidebar/Sidebar'
 import { Toolbar } from './toolbar/Toolbar'
@@ -10,20 +10,20 @@ import type { GhostCabinet, CabinetSnapshot, CabinetType, CabinetStyle } from '.
 import { getYPosition } from '../systems/placement'
 
 export function Layout() {
-  const cameraPresetRef = useRef<((preset: 'front' | 'top' | 'orbit') => void) | null>(null)
+  const cameraPresetRef = useRef<((preset: 'front' | 'top' | 'orbit' | 'recenter') => void) | null>(null)
   const canvasContainerRef = useRef<HTMLDivElement>(null)
-  const cameraRef = useRef<THREE.Camera | null>(null)
+  const [camera, setCamera] = useState<THREE.Camera | null>(null)
 
-  const handleCameraPresetReady = useCallback((fn: (preset: 'front' | 'top' | 'orbit') => void) => {
+  const handleCameraPresetReady = useCallback((fn: (preset: 'front' | 'top' | 'orbit' | 'recenter') => void) => {
     cameraPresetRef.current = fn
   }, [])
 
-  const handleCameraPreset = useCallback((preset: 'front' | 'top' | 'orbit') => {
+  const handleCameraPreset = useCallback((preset: 'front' | 'top' | 'orbit' | 'recenter') => {
     cameraPresetRef.current?.(preset)
   }, [])
 
   const handleCameraRef = useCallback((cam: THREE.Camera) => {
-    cameraRef.current = cam
+    setCamera(cam)
   }, [])
 
   const ghostMode = useStore((s) => s.ghostMode)
@@ -196,7 +196,9 @@ export function Layout() {
               position: { x: ghostAnchorX.current + g.offsetX, y: g.position[1] },
               appliedEndLeft: null,
               appliedEndRight: null,
+              appliedEndBottom: null,
               handleSide: 'left',
+              toeKick: g.type === 'upper' ? 0 : 6,
             })
           }
         }
@@ -217,17 +219,18 @@ export function Layout() {
   }, [])
 
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw' }}>
+    <div style={{ display: 'flex', height: '100vh', width: '100%', overflow: 'hidden' }}>
       <div style={{
         width: 'var(--sidebar-width)',
-        minWidth: 300,
+        minWidth: 0,
+        flexShrink: 0,
         background: 'var(--bg-secondary)',
         borderRight: '1px solid var(--border)',
         overflowY: 'auto',
       }}>
         <Sidebar />
       </div>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <Toolbar onCameraPreset={handleCameraPreset} />
         <div
           ref={canvasContainerRef}
@@ -238,7 +241,7 @@ export function Layout() {
             onCameraPresetReady={handleCameraPresetReady}
             onCameraRef={handleCameraRef}
           />
-          <MarqueeOverlay canvasContainerRef={canvasContainerRef} camera={cameraRef.current} />
+          <MarqueeOverlay canvasContainerRef={canvasContainerRef} camera={camera} />
           <div style={{
             position: 'absolute',
             bottom: 10,
@@ -248,7 +251,7 @@ export function Layout() {
             fontSize: 11,
             pointerEvents: 'none',
           }}>
-            Left-click: select · Right-drag: orbit · Shift+Right-drag: pan · Scroll: zoom
+            Left-click: select · Right-drag: orbit · Ctrl+Right-drag: pan · Scroll: zoom
           </div>
         </div>
       </div>
