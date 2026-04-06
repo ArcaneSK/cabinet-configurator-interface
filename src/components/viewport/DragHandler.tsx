@@ -6,6 +6,8 @@ import { useStore } from '../../store/useStore'
 import { applySnap, clampToWall } from '../../systems/snap'
 import { checkCollision } from '../../systems/collision'
 
+export const cabinetDragActive = { current: false }
+
 interface DragHandlerProps {
   cabinetId: string
   width: number
@@ -20,6 +22,7 @@ export function DragHandler({ cabinetId, width, height, depth }: DragHandlerProp
 
   const onPointerDown = useCallback((e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation()
+    cabinetDragActive.current = true
     const state = useStore.getState()
     const cab = state.cabinets[cabinetId]
     if (!cab) return
@@ -78,6 +81,7 @@ export function DragHandler({ cabinetId, width, height, depth }: DragHandlerProp
 
   const onPointerUp = useCallback(() => {
     isDragging.current = false
+    cabinetDragActive.current = false
   }, [])
 
   return (

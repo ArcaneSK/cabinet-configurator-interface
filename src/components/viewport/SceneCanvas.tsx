@@ -9,6 +9,12 @@ import { useRef, useEffect, useCallback } from 'react'
 import type { OrbitControls as OrbitControlsType } from 'three-stdlib'
 import * as THREE from 'three'
 
+function CameraExposer({ onCamera }: { onCamera: (cam: THREE.Camera) => void }) {
+  const { camera } = useThree()
+  useEffect(() => { onCamera(camera) }, [camera, onCamera])
+  return null
+}
+
 function CameraControlsManager({ controlsRef }: { controlsRef: React.RefObject<OrbitControlsType | null> }) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -68,9 +74,10 @@ function CameraPresetHandler({ controlsRef, onReady }: {
 
 interface SceneCanvasProps {
   onCameraPresetReady?: (fn: (preset: 'front' | 'top' | 'orbit') => void) => void
+  onCameraRef?: (camera: THREE.Camera) => void
 }
 
-export function SceneCanvas({ onCameraPresetReady }: SceneCanvasProps) {
+export function SceneCanvas({ onCameraPresetReady, onCameraRef }: SceneCanvasProps) {
   const controlsRef = useRef<OrbitControlsType>(null)
   const cabinets = useStore((s) => s.cabinets)
   const countertops = useStore((s) => s.countertops)
@@ -78,6 +85,10 @@ export function SceneCanvas({ onCameraPresetReady }: SceneCanvasProps) {
   const handleReady = useCallback((fn: (preset: 'front' | 'top' | 'orbit') => void) => {
     onCameraPresetReady?.(fn)
   }, [onCameraPresetReady])
+
+  const handleCameraRef = useCallback((cam: THREE.Camera) => {
+    onCameraRef?.(cam)
+  }, [onCameraRef])
 
   return (
     <Canvas
@@ -108,6 +119,7 @@ export function SceneCanvas({ onCameraPresetReady }: SceneCanvasProps) {
           RIGHT: THREE.MOUSE.ROTATE,
         }}
       />
+      <CameraExposer onCamera={handleCameraRef} />
       <CameraPresetHandler controlsRef={controlsRef} onReady={handleReady} />
       <CameraControlsManager controlsRef={controlsRef} />
       <WallEnvironment />
@@ -121,15 +133,6 @@ export function SceneCanvas({ onCameraPresetReady }: SceneCanvasProps) {
       ))}
 
       <DimensionLabels />
-
-      {/* Click on empty space to deselect */}
-      <mesh
-        position={[96, 54, -1]}
-        visible={false}
-        onClick={() => useStore.getState().clearSelection()}
-      >
-        <planeGeometry args={[500, 500]} />
-      </mesh>
     </Canvas>
   )
 }

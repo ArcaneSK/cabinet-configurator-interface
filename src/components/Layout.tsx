@@ -4,9 +4,13 @@ import { findPlacementPosition, getYPosition } from '../systems/placement'
 import { Sidebar } from './sidebar/Sidebar'
 import { Toolbar } from './toolbar/Toolbar'
 import { SceneCanvas } from './viewport/SceneCanvas'
+import { MarqueeOverlay } from './viewport/MarqueeOverlay'
+import * as THREE from 'three'
 
 export function Layout() {
   const cameraPresetRef = useRef<((preset: 'front' | 'top' | 'orbit') => void) | null>(null)
+  const canvasContainerRef = useRef<HTMLDivElement>(null)
+  const cameraRef = useRef<THREE.Camera | null>(null)
 
   const handleCameraPresetReady = useCallback((fn: (preset: 'front' | 'top' | 'orbit') => void) => {
     cameraPresetRef.current = fn
@@ -14,6 +18,10 @@ export function Layout() {
 
   const handleCameraPreset = useCallback((preset: 'front' | 'top' | 'orbit') => {
     cameraPresetRef.current?.(preset)
+  }, [])
+
+  const handleCameraRef = useCallback((cam: THREE.Camera) => {
+    cameraRef.current = cam
   }, [])
 
   useEffect(() => {
@@ -80,8 +88,12 @@ export function Layout() {
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <Toolbar onCameraPreset={handleCameraPreset} />
-        <div style={{ flex: 1, position: 'relative' }}>
-          <SceneCanvas onCameraPresetReady={handleCameraPresetReady} />
+        <div ref={canvasContainerRef} style={{ flex: 1, position: 'relative' }}>
+          <SceneCanvas
+            onCameraPresetReady={handleCameraPresetReady}
+            onCameraRef={handleCameraRef}
+          />
+          <MarqueeOverlay canvasContainer={canvasContainerRef.current} camera={cameraRef.current} />
           <div style={{
             position: 'absolute',
             bottom: 10,
