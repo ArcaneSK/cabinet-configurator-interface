@@ -111,7 +111,9 @@ export const useStore = create<AppState>()(
               }
             }
           }
-          return { cabinets, countertops, selectedIds: new Set<string>() }
+          const newSelected = new Set(state.selectedIds)
+          for (const id of ids) newSelected.delete(id)
+          return { cabinets, countertops, selectedIds: newSelected }
         }),
 
       // Countertops
