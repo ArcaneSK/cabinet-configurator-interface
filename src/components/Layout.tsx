@@ -5,7 +5,8 @@ import { Toolbar } from './toolbar/Toolbar'
 import { SceneCanvas } from './viewport/SceneCanvas'
 import { MarqueeOverlay } from './viewport/MarqueeOverlay'
 import * as THREE from 'three'
-import type { GhostCabinet, CabinetSnapshot } from '../types'
+import type { GhostCabinet, CabinetSnapshot, CabinetType, CabinetStyle } from '../types'
+import { getYPosition } from '../systems/placement'
 
 export function Layout() {
   const cameraPresetRef = useRef<((preset: 'front' | 'top' | 'orbit') => void) | null>(null)
@@ -126,6 +127,88 @@ export function Layout() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  useEffect(() => {
+    let dragConfig: {
+      type: CabinetType; style: CabinetStyle
+      width: number; height: number; depth: number; faceColor: string
+    } | null = null
+    let ghostStarted = false
+
+    const onDragStart = (e: Event) => {
+      dragConfig = (e as CustomEvent).detail
+      ghostStarted = false
+    }
+
+    const onPointerMove = (e: PointerEvent) => {
+      if (!dragConfig || ghostStarted) return
+
+      const canvasEl = canvasContainerRef.current
+      if (!canvasEl) return
+      const rect = canvasEl.getBoundingClientRect()
+      if (e.clientX >= rect.left && e.clientX <= rect.right &&
+          e.clientY >= rect.top && e.clientY <= rect.bottom) {
+        ghostStarted = true
+        const y = getYPosition(dragConfig.type as CabinetType)
+        const ghost: GhostCabinet = {
+          position: [0, y, 0],
+          width: dragConfig.width,
+          height: dragConfig.height,
+          depth: dragConfig.depth,
+          type: dragConfig.type as CabinetType,
+          style: dragConfig.style as CabinetStyle,
+          color: dragConfig.faceColor,
+          offsetX: -dragConfig.width / 2, // center on cursor
+        }
+        useStore.getState().setGhostMode({
+          type: 'sidebar-drag',
+          ghosts: [ghost],
+          anchorWorldX: 0,
+          isColliding: false,
+        })
+      }
+    }
+
+    const onPointerUp = () => {
+      if (!dragConfig) return
+      dragConfig = null
+      ghostStarted = false
+
+      // For sidebar drag, mouse-up places the cabinet (not click)
+      const state = useStore.getState()
+      if (state.ghostMode?.type === 'sidebar-drag') {
+        if (!state.ghostMode.isColliding) {
+          const g = state.ghostMode.ghosts[0]
+          if (g) {
+            state.addCabinet({
+              type: g.type,
+              style: g.style,
+              width: g.width,
+              height: g.height,
+              depth: g.depth,
+              isCustomSize: false,
+              faceColor: g.color,
+              boxColor: 'white',
+              position: { x: g.position[0], y: g.position[1] },
+              appliedEndLeft: null,
+              appliedEndRight: null,
+              handleSide: 'left',
+            })
+          }
+        }
+        state.cancelGhostMode()
+      }
+    }
+
+    window.addEventListener('sidebar-drag-start', onDragStart)
+    window.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp)
+    return () => {
+      window.removeEventListener('sidebar-drag-start', onDragStart)
+      window.removeEventListener('pointermove', onPointerMove)
+      window.removeEventListener('pointerup', onPointerUp)
+    }
   }, [])
 
   return (

@@ -91,6 +91,20 @@ export function CabinetCatalog() {
             key={s.id}
             className={`style-tile ${activeStyle === s.id ? 'active' : ''}`}
             onClick={() => setActiveStyle(s.id)}
+            onPointerDown={(e) => {
+              if (e.button !== 0) return
+              window.dispatchEvent(new CustomEvent('sidebar-drag-start', {
+                detail: {
+                  type: activeType,
+                  style: s.id,
+                  width: selectedWidth,
+                  height: selectedHeight,
+                  depth: selectedDepth,
+                  faceColor: 'black',
+                },
+              }))
+            }}
+            style={{ cursor: 'grab', touchAction: 'none' }}
           >
             <div style={{ whiteSpace: 'pre-line', fontSize: 14, marginBottom: 2 }}>
               {styleIcons[s.id] ?? '?'}
