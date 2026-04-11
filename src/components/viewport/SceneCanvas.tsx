@@ -2,6 +2,7 @@ import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls, Environment } from '@react-three/drei'
 import { WallEnvironment } from './WallEnvironment'
 import { CabinetGroup } from './CabinetGroup'
+import { AppliedEnd } from './AppliedEnd'
 import { CountertopMesh } from './CountertopMesh'
 import { DimensionLabels } from './DimensionLabels'
 import { GhostOverlay } from './GhostOverlay'
@@ -105,6 +106,7 @@ export function SceneCanvas({ onCameraPresetReady, onCameraRef }: SceneCanvasPro
   const controlsRef = useRef<OrbitControlsType>(null)
   const cabinets = useStore((s) => s.cabinets)
   const countertops = useStore((s) => s.countertops)
+  const appliedEnds = useStore((s) => s.appliedEnds)
 
   const handleReady = useCallback((fn: (preset: 'front' | 'top' | 'orbit' | 'recenter') => void) => {
     onCameraPresetReady?.(fn)
@@ -152,6 +154,10 @@ export function SceneCanvas({ onCameraPresetReady, onCameraRef }: SceneCanvasPro
         <Suspense key={cab.id} fallback={null}>
           <CabinetGroup data={cab} />
         </Suspense>
+      ))}
+
+      {Object.values(appliedEnds).map((e) => (
+        <AppliedEnd key={e.id} side={e.side} cabinetIds={e.cabinetIds} finishId={e.finishId} />
       ))}
 
       {Object.values(countertops).map((ct) => (

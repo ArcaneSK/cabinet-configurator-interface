@@ -4,8 +4,6 @@ import type { ThreeEvent } from '@react-three/fiber'
 import type { CabinetData } from '../../types'
 import { useStore } from '../../store/useStore'
 import { getStyle } from '../../catalog/styles'
-import { getFinish } from '../../catalog/finishes'
-import { CabinetMaterial } from './CabinetMaterial'
 import { CabinetBox } from './CabinetBox'
 import { Doors } from './Doors'
 import { Drawers } from './Drawers'
@@ -13,7 +11,6 @@ import { DragHandler } from './DragHandler'
 import { ArrowHandles } from './ArrowHandles'
 import { TranslateGizmo } from './TranslateGizmo'
 
-const T = 0.75
 const DRAWER_HEIGHT = 6
 
 interface CabinetGroupProps {
@@ -114,42 +111,6 @@ export function CabinetGroup({ data }: CabinetGroupProps) {
           faceColor={data.faceColor}
         />
       )}
-
-      {/* Applied ends */}
-      {data.appliedEndLeft && (() => {
-        const endFinish = getFinish(data.appliedEndLeft)
-        const endDepth = depth + T
-        return (
-          <group position={[-(T / 2 + 0.01), 0, 0]}>
-            <mesh position={[0, height / 2, endDepth / 2]} castShadow>
-              <boxGeometry args={[T, height, endDepth]} />
-              <CabinetMaterial finish={endFinish} />
-            </mesh>
-          </group>
-        )
-      })()}
-      {data.appliedEndRight && (() => {
-        const endFinish = getFinish(data.appliedEndRight)
-        const endDepth = depth + T
-        return (
-          <group position={[width + T / 2 + 0.01, 0, 0]}>
-            <mesh position={[0, height / 2, endDepth / 2]} castShadow>
-              <boxGeometry args={[T, height, endDepth]} />
-              <CabinetMaterial finish={endFinish} />
-            </mesh>
-          </group>
-        )
-      })()}
-      {/* Applied end bottom (uppers only) */}
-      {data.appliedEndBottom && (() => {
-        const endFinish = getFinish(data.appliedEndBottom)
-        return (
-          <mesh position={[width / 2, -(T / 2 + 0.01), (depth + T) / 2]} castShadow>
-            <boxGeometry args={[width, T, depth + T]} />
-            <CabinetMaterial finish={endFinish} />
-          </mesh>
-        )
-      })()}
 
       <DragHandler cabinetId={data.id} width={width} height={height} depth={depth} />
 

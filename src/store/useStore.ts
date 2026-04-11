@@ -3,8 +3,10 @@ import { temporal } from 'zundo'
 import { v4 as uuid } from 'uuid'
 import type {
   CabinetData, CountertopData, SnapSettings, WallConfig,
-  CabinetSnapshot, GhostModeState, GizmoStyle
+  CabinetSnapshot, GhostModeState, GizmoStyle, AppliedEndData,
 } from '../types'
+import { clampDimensionToFit, getInvalidAppliedEnds, splitAppliedEndsOnCabinetRemoval } from '../systems/appliedEnds'
+import { recomputeAllCountertopLengths } from '../systems/countertops'
 
 interface AppState {
   // Wall
@@ -16,6 +18,10 @@ interface AppState {
   addCabinet: (cabinet: Omit<CabinetData, 'id'>) => string
   updateCabinet: (id: string, updates: Partial<CabinetData>) => void
   updateCabinets: (updates: Record<string, Partial<CabinetData>>) => void
+  resizeCabinet: (id: string, dims: Partial<{ width: number; height: number; depth: number }>) => {
+    committed: { width: number; height: number; depth: number }
+    invalidatedAppliedEndIds: string[]
+  }
   removeCabinet: (id: string) => void
   removeCabinets: (ids: Set<string>) => void
 
@@ -23,6 +29,13 @@ interface AppState {
   countertops: Record<string, CountertopData>
   addCountertop: (cabinetIds: string[]) => string
   removeCountertop: (id: string) => void
+
+  // Applied ends
+  appliedEnds: Record<string, AppliedEndData>
+  addAppliedEnd: (end: Omit<AppliedEndData, 'id'>) => string
+  removeAppliedEnd: (id: string) => void
+  updateAppliedEnd: (id: string, updates: Partial<AppliedEndData>) => void
+  removeCabinetFromBottomGroup: (cabinetId: string) => void
 
   // Selection (multi-select)
   selectedIds: Set<string>
@@ -76,6 +89,38 @@ export const useStore = create<AppState>()(
             [id]: { ...state.cabinets[id], ...updates },
           },
         })),
+      resizeCabinet: (id, dims) => {
+        const state = get()
+        const cabinet = state.cabinets[id]
+        if (!cabinet) {
+          return { committed: { width: 0, height: 0, depth: 0 }, invalidatedAppliedEndIds: [] }
+        }
+        const requested = {
+          width: dims.width ?? cabinet.width,
+          height: dims.height ?? cabinet.height,
+          depth: dims.depth ?? cabinet.depth,
+        }
+        const others = Object.values(state.cabinets).filter(c => c.id !== id)
+        const committed = clampDimensionToFit(cabinet, requested, others)
+
+        // Apply cabinet update + recompute countertop lengths + delete invalid applied ends.
+        // All in one set() so zundo records it as one undo step.
+        let invalidated: string[] = []
+        set((s) => {
+          const nextCabinet = { ...cabinet, ...committed }
+          const nextCabinets = { ...s.cabinets, [id]: nextCabinet }
+          const nextCountertops = recomputeAllCountertopLengths(nextCabinets, s.countertops)
+          invalidated = getInvalidAppliedEnds(nextCabinets, s.appliedEnds)
+          const nextAppliedEnds = { ...s.appliedEnds }
+          for (const eid of invalidated) delete nextAppliedEnds[eid]
+          return {
+            cabinets: nextCabinets,
+            countertops: nextCountertops,
+            appliedEnds: nextAppliedEnds,
+          }
+        })
+        return { committed, invalidatedAppliedEndIds: invalidated }
+      },
       updateCabinets: (updates) =>
         set((state) => {
           const cabinets = { ...state.cabinets }
@@ -95,9 +140,10 @@ export const useStore = create<AppState>()(
               delete countertops[ctId]
             }
           }
+          const appliedEnds = splitAppliedEndsOnCabinetRemoval([id], rest, state.appliedEnds)
           const newSelected = new Set(state.selectedIds)
           newSelected.delete(id)
-          return { cabinets: rest, countertops, selectedIds: newSelected }
+          return { cabinets: rest, countertops, appliedEnds, selectedIds: newSelected }
         }),
       removeCabinets: (ids) =>
         set((state) => {
@@ -111,9 +157,10 @@ export const useStore = create<AppState>()(
               }
             }
           }
+          const appliedEnds = splitAppliedEndsOnCabinetRemoval(Array.from(ids), cabinets, state.appliedEnds)
           const newSelected = new Set(state.selectedIds)
           for (const id of ids) newSelected.delete(id)
-          return { cabinets, countertops, selectedIds: newSelected }
+          return { cabinets, countertops, appliedEnds, selectedIds: newSelected }
         }),
 
       // Countertops
@@ -141,6 +188,42 @@ export const useStore = create<AppState>()(
         set((state) => {
           const { [id]: _, ...rest } = state.countertops
           return { countertops: rest }
+        }),
+
+      // Applied ends
+      appliedEnds: {},
+      addAppliedEnd: (end) => {
+        const id = uuid()
+        set((state) => ({
+          appliedEnds: { ...state.appliedEnds, [id]: { ...end, id } },
+        }))
+        return id
+      },
+      removeAppliedEnd: (id) =>
+        set((state) => {
+          const { [id]: _, ...rest } = state.appliedEnds
+          return { appliedEnds: rest }
+        }),
+      updateAppliedEnd: (id, updates) =>
+        set((state) => ({
+          appliedEnds: {
+            ...state.appliedEnds,
+            [id]: { ...state.appliedEnds[id], ...updates },
+          },
+        })),
+      removeCabinetFromBottomGroup: (cabinetId: string) =>
+        set((state) => {
+          const next = { ...state.appliedEnds }
+          for (const e of Object.values(state.appliedEnds)) {
+            if (e.side !== 'bottom' || !e.cabinetIds.includes(cabinetId)) continue
+            // Reuse the split helper by pretending this cabinet is being removed
+            // from the bottom-AE's perspective only — cabinets map stays unchanged.
+            const synthetic = { [e.id]: e }
+            const split = splitAppliedEndsOnCabinetRemoval([cabinetId], state.cabinets, synthetic)
+            delete next[e.id]
+            for (const [k, v] of Object.entries(split)) next[k] = v
+          }
+          return { appliedEnds: next }
         }),
 
       // Selection

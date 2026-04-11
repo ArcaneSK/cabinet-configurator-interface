@@ -13,9 +13,6 @@ export interface CabinetData {
   faceColor: string
   boxColor: string
   position: { x: number; y: number }
-  appliedEndLeft: string | null
-  appliedEndRight: string | null
-  appliedEndBottom: string | null
   handleSide: 'left' | 'right'
   toeKick: number // toe kick height in inches (base and pantry only)
 }
@@ -62,6 +59,16 @@ export interface SizeCatalog {
   widths: number[]
   heights: number[]
   depths: number[]
+}
+
+export type AppliedEndSide = 'left' | 'right' | 'bottom'
+
+export interface AppliedEndData {
+  id: string
+  side: AppliedEndSide
+  finishId: string
+  // length 1 for 'left' | 'right', 1..N (sorted by position.x) for 'bottom'
+  cabinetIds: string[]
 }
 
 export type CabinetSnapshot = Omit<CabinetData, 'id'> & {

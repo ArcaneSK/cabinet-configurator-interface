@@ -13,7 +13,7 @@ interface CabinetBoxProps {
   toeKick?: number
 }
 
-export function CabinetBox({ width, height, depth, boxColor, shelfY, toeKick = 0 }: CabinetBoxProps) {
+export function CabinetBox({ width, height, depth, boxColor, shelfY }: CabinetBoxProps) {
   const finish = getFinish(boxColor)
   const innerW = width - 2 * T
   const innerD = depth - T

@@ -11,7 +11,7 @@ export function Toolbar({ onCameraPreset }: ToolbarProps) {
 
   const handleExport = useCallback(() => {
     const state = useStore.getState()
-    const data = generateExport(state.wall, state.cabinets, state.countertops)
+    const data = generateExport(state.wall, state.cabinets, state.countertops, state.appliedEnds)
     const json = JSON.stringify(data, null, 2)
 
     navigator.clipboard.writeText(json).catch(() => {})

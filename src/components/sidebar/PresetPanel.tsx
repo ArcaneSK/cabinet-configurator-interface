@@ -79,9 +79,6 @@ export function PresetPanel() {
         faceColor: cab.faceColor,
         boxColor: cab.boxColor,
         position: { x: cx, y },
-        appliedEndLeft: cab.appliedEndLeft,
-        appliedEndRight: cab.appliedEndRight,
-        appliedEndBottom: cab.appliedEndBottom,
         handleSide: cab.handleSide,
         toeKick: cab.toeKick,
       })
@@ -104,9 +101,6 @@ export function PresetPanel() {
         faceColor: cab.faceColor,
         boxColor: cab.boxColor,
         position: { x: upperPositions[i], y },
-        appliedEndLeft: cab.appliedEndLeft,
-        appliedEndRight: cab.appliedEndRight,
-        appliedEndBottom: cab.appliedEndBottom,
         handleSide: cab.handleSide,
         toeKick: cab.toeKick,
       })

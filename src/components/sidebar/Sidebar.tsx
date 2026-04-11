@@ -4,6 +4,7 @@ import { CabinetCatalog } from './CabinetCatalog'
 import { CabinetProperties } from './CabinetProperties'
 import { PresetPanel } from './PresetPanel'
 import { CountertopPanel } from './CountertopPanel'
+import { AppliedEndsPanel } from './AppliedEndsPanel'
 import { SettingsPanel } from './SettingsPanel'
 import { useStore } from '../../store/useStore'
 
@@ -49,6 +50,9 @@ export function Sidebar() {
       )}
       <Section title="Countertops">
         <CountertopPanel />
+      </Section>
+      <Section title="Applied Ends">
+        <AppliedEndsPanel />
       </Section>
       <Section title="Settings" defaultOpen={false}>
         <SettingsPanel />

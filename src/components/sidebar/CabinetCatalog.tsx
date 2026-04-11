@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from 'react'
 import { useStore } from '../../store/useStore'
 import { getStylesForType } from '../../catalog/styles'
-import { sizeCatalog, defaultDimensions } from '../../catalog/sizes'
+import { sizeCatalog, defaultDimensions, customSizeConstraints } from '../../catalog/sizes'
 import { findPlacementPosition, getYPosition } from '../../systems/placement'
 import type { CabinetType, CabinetStyle } from '../../types'
 
@@ -11,6 +11,13 @@ export function CabinetCatalog() {
   const [selectedWidth, setSelectedWidth] = useState(24)
   const [selectedHeight, setSelectedHeight] = useState(defaultDimensions.base.height)
   const [selectedDepth, setSelectedDepth] = useState(defaultDimensions.base.depth)
+  const [customMode, setCustomMode] = useState(false)
+
+  const clampCustom = (axis: 'width' | 'height' | 'depth', v: number) => {
+    const { min, max } = customSizeConstraints[axis]
+    if (Number.isNaN(v)) return min
+    return Math.max(min, Math.min(max, v))
+  }
 
   const addCabinet = useStore((s) => s.addCabinet)
   const wall = useStore((s) => s.wall)
@@ -52,17 +59,14 @@ export function CabinetCatalog() {
       width: selectedWidth,
       height: selectedHeight,
       depth: selectedDepth,
-      isCustomSize: !sizes.widths.includes(selectedWidth),
+      isCustomSize: customMode,
       faceColor: 'black',
       boxColor: 'white',
       position: { x, y },
-      appliedEndLeft: null,
-      appliedEndRight: null,
-      appliedEndBottom: null,
       handleSide: 'left',
       toeKick: activeType === 'upper' ? 0 : 6,
     })
-  }, [activeType, activeStyle, selectedWidth, selectedHeight, selectedDepth, wall, cabinets, addCabinet, sizes])
+  }, [activeType, activeStyle, selectedWidth, selectedHeight, selectedDepth, wall, cabinets, addCabinet, customMode])
 
   function CabinetIcon({ styleId }: { styleId: string }) {
     const w = 32, h = 36
@@ -258,6 +262,7 @@ export function CabinetCatalog() {
                   height: selectedHeight,
                   depth: selectedDepth,
                   faceColor: 'black',
+                  isCustomSize: customMode,
                 },
               }))
             }}
@@ -274,20 +279,67 @@ export function CabinetCatalog() {
         Click to select style · Drag into 3D view to place
       </div>
 
-      <div className="size-label">Width</div>
-      <div className="size-selector">
-        {sizes.widths.map(w => (
-          <button
-            key={w}
-            className={`size-btn ${selectedWidth === w ? 'active' : ''}`}
-            onClick={() => setSelectedWidth(w)}
-          >
-            {w}"
-          </button>
-        ))}
-      </div>
+      {!customMode && (
+        <>
+          <div className="size-label">Width</div>
+          <div className="size-selector">
+            {sizes.widths.map(w => (
+              <button
+                key={w}
+                className={`size-btn ${selectedWidth === w ? 'active' : ''}`}
+                onClick={() => setSelectedWidth(w)}
+              >
+                {w}"
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
-      {sizes.heights.length > 1 && (
+      {customMode && (
+        <>
+          <div className="size-label">Width (in)</div>
+          <input
+            type="number"
+            value={selectedWidth}
+            min={customSizeConstraints.width.min}
+            max={customSizeConstraints.width.max}
+            step={1}
+            onChange={(e) => setSelectedWidth(clampCustom('width', parseFloat(e.target.value)))}
+          />
+          <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+            {customSizeConstraints.width.min}–{customSizeConstraints.width.max} in
+          </div>
+
+          <div className="size-label">Height (in)</div>
+          <input
+            type="number"
+            value={selectedHeight}
+            min={customSizeConstraints.height.min}
+            max={customSizeConstraints.height.max}
+            step={1}
+            onChange={(e) => setSelectedHeight(clampCustom('height', parseFloat(e.target.value)))}
+          />
+          <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+            {customSizeConstraints.height.min}–{customSizeConstraints.height.max} in
+          </div>
+
+          <div className="size-label">Depth (in)</div>
+          <input
+            type="number"
+            value={selectedDepth}
+            min={customSizeConstraints.depth.min}
+            max={customSizeConstraints.depth.max}
+            step={1}
+            onChange={(e) => setSelectedDepth(clampCustom('depth', parseFloat(e.target.value)))}
+          />
+          <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>
+            {customSizeConstraints.depth.min}–{customSizeConstraints.depth.max} in
+          </div>
+        </>
+      )}
+
+      {!customMode && sizes.heights.length > 1 && (
         <>
           <div className="size-label">Height</div>
           <div className="size-selector">
@@ -304,7 +356,7 @@ export function CabinetCatalog() {
         </>
       )}
 
-      {sizes.depths.length > 1 && (
+      {!customMode && sizes.depths.length > 1 && (
         <>
           <div className="size-label">Depth</div>
           <div className="size-selector">
@@ -320,6 +372,15 @@ export function CabinetCatalog() {
           </div>
         </>
       )}
+
+      <button
+        className={`size-btn ${customMode ? 'active' : ''}`}
+        style={{ width: '100%', marginTop: 8, marginBottom: 8 }}
+        onClick={() => setCustomMode(m => !m)}
+        title={customMode ? 'Return to preset dimensions' : 'Enter custom width, height, and depth'}
+      >
+        {customMode ? '\u2190 Use Preset Dimensions' : 'Use Custom Dimensions\u2026'}
+      </button>
 
       <button className="add-btn" onClick={handleAdd}>
         + Add {activeType.charAt(0).toUpperCase() + activeType.slice(1)} Cabinet

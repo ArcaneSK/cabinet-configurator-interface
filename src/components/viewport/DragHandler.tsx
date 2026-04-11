@@ -4,7 +4,7 @@ import type { ThreeEvent } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useStore } from '../../store/useStore'
 import type { CabinetData } from '../../types'
-import { applySnap, clampToWall } from '../../systems/snap'
+import { applySnap, applyVerticalSnap, clampToWall } from '../../systems/snap'
 import { checkCollision } from '../../systems/collision'
 
 const DRAG_THRESHOLD = 4
@@ -67,8 +67,15 @@ export function DragHandler({ cabinetId, width, height, depth }: DragHandlerProp
       y: intersection.y - cab.position.y,
     }
 
-    gl.domElement.setPointerCapture(e.nativeEvent.pointerId)
-  }, [cabinetId, gl, raycastToPlane])
+    // Use R3F's pointer capture (on the Three.js event target) rather than
+    // the DOM canvas. R3F routes synthetic pointer events via per-frame
+    // raycasting; without capturing on the event target, fast cursor moves
+    // that leave the drag mesh in screen space stop firing onPointerMove
+    // and the drag stalls. e.target.setPointerCapture tells R3F's event
+    // system to keep dispatching move events to this mesh regardless of
+    // ray hits until release.
+    ;(e.target as unknown as Element).setPointerCapture(e.nativeEvent.pointerId)
+  }, [cabinetId, raycastToPlane])
 
   const onPointerMove = useCallback((e: ThreeEvent<PointerEvent>) => {
     if (!isDragging.current) return
@@ -100,6 +107,10 @@ export function DragHandler({ cabinetId, width, height, depth }: DragHandlerProp
     if (!allUppers || cab.type !== 'upper') {
       newY = cab.position.y
     } else {
+      newY = Math.max(0, Math.min(newY, state.wall.height - cab.height))
+      // Y-axis snap for uppers (mirrors X snap — fires only when adjacent
+      // snap is enabled).
+      newY = applyVerticalSnap(newY, cab.height, allCabinets, cabinetId, state.snapSettings)
       newY = Math.max(0, Math.min(newY, state.wall.height - cab.height))
     }
 
@@ -183,8 +194,12 @@ export function DragHandler({ cabinetId, width, height, depth }: DragHandlerProp
     isDragging.current = false
     dragStarted.current = false
     cabinetDragActive.current = false
-    gl.domElement.releasePointerCapture(e.nativeEvent.pointerId)
-  }, [gl])
+    try {
+      ;(e.target as unknown as Element).releasePointerCapture(e.nativeEvent.pointerId)
+    } catch {
+      // Capture may have already been released by the browser or R3F.
+    }
+  }, [])
 
   // Safety: if pointer is released outside the mesh, reset drag state via DOM listener
   useEffect(() => {

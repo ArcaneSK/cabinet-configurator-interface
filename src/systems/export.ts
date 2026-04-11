@@ -1,12 +1,13 @@
-import type { CabinetData, CountertopData, WallConfig } from '../types'
+import type { CabinetData, CountertopData, WallConfig, AppliedEndData } from '../types'
 
 interface ExportSchema {
   version: string
   wall: WallConfig
-  items: (ExportCabinet | ExportCountertop)[]
+  items: (ExportCabinet | ExportCountertop | ExportAppliedEnd)[]
   summary: {
     totalCabinets: number
     totalCountertops: number
+    totalAppliedEnds: number
     hasCustomSizes: boolean
   }
 }
@@ -22,7 +23,6 @@ interface ExportCabinet {
   isCustomSize: boolean
   faceColor: string
   boxColor: string
-  appliedEnds: { left: string | null; right: string | null; bottom: string | null }
   handleSide: CabinetData['handleSide']
   toeKick: number
   position: { x: number; y: number }
@@ -37,15 +37,25 @@ interface ExportCountertop {
   spansOver: string[]
 }
 
+interface ExportAppliedEnd {
+  id: string
+  type: 'appliedEnd'
+  side: 'left' | 'right' | 'bottom'
+  finishId: string
+  cabinetIds: string[]
+}
+
 export function generateExport(
   wall: WallConfig,
   cabinets: Record<string, CabinetData>,
-  countertops: Record<string, CountertopData>
+  countertops: Record<string, CountertopData>,
+  appliedEnds: Record<string, AppliedEndData>
 ): ExportSchema {
   const cabinetList = Object.values(cabinets)
   const countertopList = Object.values(countertops)
+  const appliedEndList = Object.values(appliedEnds)
 
-  const items: (ExportCabinet | ExportCountertop)[] = [
+  const items: (ExportCabinet | ExportCountertop | ExportAppliedEnd)[] = [
     ...cabinetList.map((c): ExportCabinet => ({
       id: c.id,
       type: 'cabinet',
@@ -57,7 +67,6 @@ export function generateExport(
       isCustomSize: c.isCustomSize,
       faceColor: c.faceColor,
       boxColor: c.boxColor,
-      appliedEnds: { left: c.appliedEndLeft, right: c.appliedEndRight, bottom: c.appliedEndBottom },
       handleSide: c.handleSide,
       toeKick: c.toeKick,
       position: c.position,
@@ -70,6 +79,13 @@ export function generateExport(
       color: ct.color,
       spansOver: ct.cabinetIds,
     })),
+    ...appliedEndList.map((ae): ExportAppliedEnd => ({
+      id: ae.id,
+      type: 'appliedEnd',
+      side: ae.side,
+      finishId: ae.finishId,
+      cabinetIds: ae.cabinetIds,
+    })),
   ]
 
   return {
@@ -79,6 +95,7 @@ export function generateExport(
     summary: {
       totalCabinets: cabinetList.length,
       totalCountertops: countertopList.length,
+      totalAppliedEnds: appliedEndList.length,
       hasCustomSizes: cabinetList.some(c => c.isCustomSize),
     },
   }

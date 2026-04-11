@@ -136,11 +136,13 @@ export function Layout() {
     let dragConfig: {
       type: CabinetType; style: CabinetStyle
       width: number; height: number; depth: number; faceColor: string
+      isCustomSize: boolean
     } | null = null
     let ghostStarted = false
 
     const onDragStart = (e: Event) => {
-      dragConfig = (e as CustomEvent).detail
+      const detail = (e as CustomEvent).detail
+      dragConfig = { ...detail, isCustomSize: !!detail.isCustomSize }
       ghostStarted = false
     }
 
@@ -175,6 +177,7 @@ export function Layout() {
 
     const onPointerUp = () => {
       if (!dragConfig) return
+      const wasCustom = dragConfig.isCustomSize
       dragConfig = null
       ghostStarted = false
 
@@ -190,13 +193,10 @@ export function Layout() {
               width: g.width,
               height: g.height,
               depth: g.depth,
-              isCustomSize: false,
+              isCustomSize: wasCustom,
               faceColor: g.color,
               boxColor: 'white',
               position: { x: ghostAnchorX.current + g.offsetX, y: g.position[1] },
-              appliedEndLeft: null,
-              appliedEndRight: null,
-              appliedEndBottom: null,
               handleSide: 'left',
               toeKick: g.type === 'upper' ? 0 : 6,
             })
